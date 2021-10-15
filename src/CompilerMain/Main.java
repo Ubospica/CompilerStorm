@@ -1,4 +1,4 @@
-package compilerMain;
+package CompilerMain;
 
 
 public class Main {

@@ -1,0 +1,3 @@
+[submodule "doc/Compiler-Design-Implementation"]
+	path = doc/Compiler-Design-Implementation
+	url = https://github.com/ACMClassCourses/Compiler-Design-Implementation.git
