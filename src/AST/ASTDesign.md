@@ -1,0 +1,33 @@
+- ASTNode
+  - ProgramNode		// node as a root
+  - DefNode
+    - FuncDefNode
+    - ConstructorDefNode
+    - ClassDefNode
+  - StmtNode		// node as a statement
+    - VarDefStmtNode
+    - VarDefSubStmtNode
+    - ReturnStmtNode
+    - BlockStmtNode
+    - ExprStmtNode
+    - IfStmtNode
+    - WhileStmtNode
+    - ForStmtNode
+    - ControlStmtNode
+    - EmptyStmtNode
+  - ExprNode		// node as an expression
+    - AtomExprNode
+      - IntExprNode
+      - BoolExprNode
+      - StringExprNode
+      - nullExprNode
+    - AssignExprNode
+    - BinaryExprNode
+    - UnaryExprNode
+    - LambdaExprNode
+    - MemberExprNode
+    - FuncCallExprNode
+    - SubscriptExprNode
+    - NewExprNode
+    - ThisExprNode
+  - TypeNode

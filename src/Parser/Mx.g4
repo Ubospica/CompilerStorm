@@ -1,66 +1,68 @@
 /** grammar for the language Mx* */
 grammar Mx;
 
-program : (funcDefinition | (classDefinition) | (varDefinitionStmt))* EOF;
+program : (programSub)* EOF;
+programSub : funcDef | (classDef) | (varDefStmt);
 
 block : '{' statement* '}';
 
 
-funcDefinition : returnType Identifier '(' paramList ')' block;
-constructorDefinition : Identifier '(' ')' block;
+funcDef : returnType Identifier '(' paramList ')' block;
+constructorDef : Identifier '(' ')' block;
 paramList : (param (',' param)* )?;
 param : type Identifier;
 
-varDefinitionStmt : varDefinition ';';
-varDefinition : type varDefinitionSub (',' varDefinitionSub)*;
-varDefinitionSub : Identifier ('=' expression)?;
+varDefStmt : varDef ';';
+varDef : type varDefSub (',' varDefSub)*;
+varDefSub : Identifier ('=' expression)?;
 
-classDefinition
+classDef
     : Class Identifier
-        '{' (funcDefinition | constructorDefinition | (varDefinitionStmt))* '}' ';'
+        '{' (funcDef | constructorDef | varDefStmt)* '}' ';'
     ;
 
 statement
-    : block
-    | varDefinition ';'
+    : block                                                    # blockStmt
+    | varDefStmt                                               # varDefineStmt
     | If '(' expression ')' trueStmt=statement
-        (Else falseStmt=statement)?
-    | While '(' expression ')' loopStmt=statement
-    | For '(' (expression | varDefinition)? ';'
-        cond=expression? ';' incr=expression? ')' loopStmt=statement
-    | (Break | Continue) ';'
-    | Return expression? ';'
-    | expression ';'
-    | ';'
+        (Else falseStmt=statement)?                            # ifStmt
+    | While '(' expression ')' statement                       # whileStmt
+//    | For '(' (expression | varDef)? ';'
+    | For '(' init=expression? ';'
+        cond=expression? ';' incr=expression? ')' statement    # forStmt
+    | (Break | Continue) ';'                                   # controlStmt
+    | Return expression? ';'                                   # returnStmt
+    | expression ';'                                           # exprStmt
+    | ';'                                                      # emptyStmt
     ;
 
 expression
-    : primary
+    : primary                                           # atomExpr
     // priority level 2
-    | lambda
-    | expression op=('++'|'--')
-    | '(' expression ')'
-    | expression '.' Identifier
-    | expression '(' expressionList ')'
-    | expression '[' index=expression ']'
+    | lambda                                            # lambdaExpr
+    | expression op=('++'|'--')                         # suffixExpr
+    | '(' expression ')'                                # parenExpr
+    | expression op='.' Identifier                      # memberAccessExpr
+    | expression '(' expressionList ')'                 # funcCallExpr
+    | base=expression '[' index=expression ']'          # subscriptExpr
     // priority level 3
-    | <assoc=right> op=('++'|'--') expression
-    | <assoc=right> op=('+'|'-'|'!'|'~') expression
-    | <assoc=right> newExpression
+    | <assoc=right> op=('++'|'--') expression           # prefixExpr
+    | <assoc=right> op=('+'|'-'|'!'|'~') expression     # prefixExpr
+    | <assoc=right> newExpression                       # newExpr
     //new delete * &
     // level 4 and more
-    | expression op=('*'|'/'|'%') expression
-    | expression op=('+'|'-') expression
-    | expression op=('<<'|'>>') expression
-    | expression op=('<'|'<='|'>'|'>=') expression
-    | expression op=('=='|'!=') expression
-    | expression op='&' expression
-    | expression op='^' expression
-    | expression op='|' expression
-    | expression op='&&' expression
-    | expression op='||' expression
-    | <assoc=right> expression op='=' expression
-    | expression op=',' expression
+    | src1=expression op=('*'|'/'|'%') src2=expression            # binaryExpr
+    | src1=expression op=('+'|'-') src2=expression                # binaryExpr
+    | src1=expression op=('<<'|'>>') src2=expression              # binaryExpr
+    | src1=expression op=('<'|'<='|'>'|'>=') src2=expression      # binaryExpr
+    | src1=expression op=('=='|'!=') src2=expression              # binaryExpr
+    | src1=expression op='&' src2=expression                      # binaryExpr
+    | src1=expression op='^' src2=expression                      # binaryExpr
+    | src1=expression op='|' src2=expression                      # binaryExpr
+    | src1=expression op='&&' src2=expression                     # binaryExpr
+    | src1=expression op='||' src2=expression                     # binaryExpr
+    | <assoc=right> src1=expression op='=' src2=expression        # binaryExpr
+    | src1=expression op=',' src2=expression                      # binaryExpr
     ;
 
 primary : Identifier | literal | This;
@@ -70,12 +72,13 @@ expressionList
     ;
 
 newExpression
-    : New typeSub
-    | New typeSub (errNewArraySize | newArraySize)
-    | New Identifier ('(' ')')?
+    : New typeSub                                       # simpleNewExpr
+    | New typeSub errNewArraySize                       # errArrayNewExpr
+    | New typeSub newArraySize                          # arrayNewExpr
+    | New Identifier ('(' ')')?                         # classNewExpr
     ;
 newArraySize : ('[' expression ']')* ('[' ']')*;
-errNewArraySize : ('[' expression ']')* ('[' ']')+ ('[' expression ']')+;
+errNewArraySize : ('[' expression ']')* ('[' ']')+ ('[' expression ']')+ ('[' expression? ']')*;
 
 type : typeSub | typeSub ('[' ']')+;
 typeSub : Bool | Int | String | Identifier;
