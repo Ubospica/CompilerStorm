@@ -7,9 +7,9 @@ public class TypeNode extends ASTNode {
     public enum Types {
         VOID, INT, BOOL, STRING, CLASS
     }
-    Types type;
-    String identifier;
-    int dim;
+    public Types type;
+    public String identifier;
+    public int dim;
 
     public TypeNode(Types type, String identifier, int dim, Position pos) {
         super(pos);

@@ -3,8 +3,8 @@ package AST;
 import Util.Position;
 
 public class IfStmtNode extends StmtNode {
-    ExprNode condition;
-    StmtNode thenStmt, elseStmt;
+    public ExprNode condition;
+    public StmtNode thenStmt, elseStmt;
 
     public IfStmtNode(ExprNode condition, StmtNode thenStmt, StmtNode elseStmt, Position pos) {
         super(pos);

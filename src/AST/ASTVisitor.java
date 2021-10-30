@@ -45,14 +45,15 @@ public interface ASTVisitor {
     void visit(BoolExprNode it);
     void visit(StringExprNode it);
     void visit(NullExprNode it);
-    void visit(AssignExprNode it);
     void visit(BinaryExprNode it);
-    void visit(UnaryExprNode it);
+    void visit(PrefixExprNode it);
+    void visit(SuffixExprNode it);
     void visit(LambdaExprNode it);
     void visit(MemberExprNode it);
     void visit(FuncCallExprNode it);
     void visit(SubscriptExprNode it);
     void visit(NewExprNode it);
     void visit(ThisExprNode it);
+    void visit(VarExprNode it);
     void visit(TypeNode it);
 }

@@ -5,16 +5,12 @@ import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.ArrayList;
 
-public class FuncDefNode extends DefNode {
-    public TypeNode returnType;
-    public String id;
+public class LambdaExprNode extends ExprNode {
     public ArrayList<VarDefSubStmtNode> paramList;
     public BlockStmtNode body;
 
-    public FuncDefNode(TypeNode type, String id, ArrayList<VarDefSubStmtNode> param, BlockStmtNode body, Position pos) {
+    public LambdaExprNode(ArrayList<VarDefSubStmtNode> param, BlockStmtNode body, Position pos) {
         super(pos);
-        this.returnType = type;
-        this.id = id;
         this.paramList = param;
         this.body = body;
     }

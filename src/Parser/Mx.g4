@@ -75,9 +75,9 @@ newExpression
     : New typeSub                                       # simpleNewExpr
     | New typeSub errNewArraySize                       # errArrayNewExpr
     | New typeSub newArraySize                          # arrayNewExpr
-    | New Identifier ('(' ')')?                         # classNewExpr
+    | New typeSub ('(' ')')?                            # classNewExpr
     ;
-newArraySize : ('[' expression ']')* ('[' ']')*;
+newArraySize : ('[' expression ']')+ ('[' ']')*;
 errNewArraySize : ('[' expression ']')* ('[' ']')+ ('[' expression ']')+ ('[' expression? ']')*;
 
 type : typeSub | typeSub ('[' ']')+;
@@ -86,7 +86,7 @@ returnType : type | Void;
 
 literal : IntegerLiteral | StringLiteral | BooleanLiteral | NullLiteral;
 
-lambda : '[' '&' ']' '(' paramList ')' '->' block expressionList;
+lambda : '[' '&' ']' '(' paramList ')' '->' block;
 
 
 // literal constants
