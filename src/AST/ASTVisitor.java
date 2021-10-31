@@ -1,6 +1,11 @@
 package AST;
 
-import Parser.MxVisitor;
+import AST.Definition.*;
+import AST.Expression.*;
+import AST.Expression.Atom.*;
+import AST.Statement.*;
+import AST.Statement.ControlFlow.*;
+
 /*
 - ASTNode
   - ProgramNode		// node as a root
