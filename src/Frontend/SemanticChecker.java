@@ -13,10 +13,13 @@ import Builtin.BuiltinFunc;
 import Builtin.BuiltinType;
 import Util.Error.InternalError;
 import Util.Error.SemanticError;
+import Util.Position;
 
 import java.util.ArrayList;
 import java.util.Stack;
 
+
+//todo: replace new Type(TypeEnum) to BuiltinType
 
 public class SemanticChecker implements ASTVisitor {
     private Scope globalScope;
@@ -34,6 +37,12 @@ public class SemanticChecker implements ASTVisitor {
     public SemanticChecker(Scope globalScope) {
         this.globalScope = globalScope;
         curScope = globalScope;
+
+        // check main function
+        FuncType ty = globalScope.getFuncType("main", false, new Position());
+        if (!ty.equals(new FuncType("main", BuiltinType.intType, new ArrayList<>()))) {
+            throw new SemanticError("main function defined incorrectly", new Position());
+        }
     }
 
     @Override
@@ -278,8 +287,25 @@ public class SemanticChecker implements ASTVisitor {
     }
 
 
+    //todo: func name: check**
+    //todo: checkAssignable
     private static boolean checkTypeIdentical(BinaryExprNode it) {
         return it.left.type.equals(it.right.type);
+    }
+
+    private boolean checkAssignable(Type left, Type right) {
+        if (right.isNull()) {
+            switch (left.type) {
+                case ARRAY, CLASS -> {
+                    return true;
+                }
+                default -> {
+                    return false;
+                }
+            }
+        } else {
+            return left.equals(right);
+        }
     }
 
     private void assignCheck(BinaryExprNode it) {
@@ -299,6 +325,7 @@ public class SemanticChecker implements ASTVisitor {
         }
     }
 
+    //todo: logic -> func
     @Override
     public void visit(BinaryExprNode it) {
         // eval order
@@ -314,15 +341,20 @@ public class SemanticChecker implements ASTVisitor {
 //            case "," -> it.type = it.right.type;
             case "!=", "==" -> {
                 switch (it.left.type.type) {
-                    case STRING, NULL, BOOL, INT -> { }
-                    case ARRAY -> {
+                    case STRING, BOOL, INT -> { }
+                    case ARRAY, CLASS -> {
                         if (!it.right.type.isNull()) {
+                            throw new SemanticError("BinaryExprNode type error", it.pos);
+                        }
+                    }
+                    case NULL -> {
+                        if (!it.right.type.isClass() && !it.right.type.isArray() && !it.right.type.isNull()) {
                             throw new SemanticError("BinaryExprNode type error", it.pos);
                         }
                     }
                     default -> throw new SemanticError("BinaryExprNode type error", it.pos);
                 }
-                if (!it.left.type.isArray() && !checkTypeIdentical(it)) {
+                if (!it.left.type.isArray() && !it.left.type.isClass() && !it.left.type.isNull() && !checkTypeIdentical(it)) {
                     throw new SemanticError("BinaryExprNode type error", it.pos);
                 }
                 it.type = new Type(TypeEnum.BOOL);
@@ -490,8 +522,8 @@ public class SemanticChecker implements ASTVisitor {
         }
         for (int i = 0; i < it.argList.size(); ++i) {
             it.argList.get(i).accept(this);
-            if (!it.argList.get(i).type.equals(funcType.param.get(i))) {
-                throw new SemanticError("FuncCallExprNode.param No." + i + " does not match",
+            if (!checkAssignable(funcType.param.get(i), it.argList.get(i).type)) {
+                throw new SemanticError("FuncCallExprNode.param No." + (i + 1) + " does not match",
                         it.argList.get(i).pos);
             }
         }

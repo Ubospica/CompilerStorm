@@ -91,7 +91,7 @@ public class Scope {
         func.put(name, type);
     }
 
-    public Type getFuncType(String name, boolean lookUpon, Position pos) {
+    public FuncType getFuncType(String name, boolean lookUpon, Position pos) {
         if (func.containsKey(name)) {
             return func.get(name);
         }

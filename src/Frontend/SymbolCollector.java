@@ -11,6 +11,7 @@ import AST.Scope.Type.Type;
 import AST.Statement.*;
 import AST.Statement.ControlFlow.*;
 import AST.TypeEnum;
+import Builtin.BuiltinType;
 import Util.Error.SemanticError;
 import Util.Position;
 
@@ -96,7 +97,7 @@ public class SymbolCollector implements ASTVisitor {
             classType.addVar(i.id, fieldType, i.pos);
         }
         if (!it.constructor.isEmpty()) {
-            classType.constructor = new FuncType(classType.name, null, new ArrayList<>());
+            classType.constructor = new FuncType(classType.name, BuiltinType.voidType, new ArrayList<>());
         }
         inClass = true;
         curClass = classType;
