@@ -45,7 +45,6 @@ public class ClassType extends Type {
         if (func.containsKey(name)) {
             return func.get(name);
         } else {
-            int tmp = 1;
             throw new SemanticError("Function not found: " + name, pos);
         }
     }

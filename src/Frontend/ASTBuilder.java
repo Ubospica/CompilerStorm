@@ -1,10 +1,7 @@
 package Frontend;
 
 import AST.*;
-import AST.Statement.ControlFlow.ControlStmtNode;
-import AST.Statement.ControlFlow.ForStmtNode;
-import AST.Statement.ControlFlow.ReturnStmtNode;
-import AST.Statement.ControlFlow.WhileStmtNode;
+import AST.Statement.ControlFlow.*;
 import AST.Definition.*;
 import AST.Expression.*;
 import AST.Expression.Atom.*;
@@ -15,6 +12,7 @@ import Util.Error.SyntaxError;
 import Util.Position;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
@@ -184,9 +182,26 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     }
 
     @Override
+    public ASTNode visitIfStmt(MxParser.IfStmtContext ctx) {
+        var thenStmt = (StmtNode)visit(ctx.trueStmt);
+        var elseStmt = ctx.falseStmt == null ? null : (StmtNode) visit(ctx.falseStmt);
+        if (!(thenStmt instanceof BlockStmtNode)) {
+            thenStmt = new BlockStmtNode(new ArrayList<>(Arrays.asList(thenStmt)), thenStmt.pos);
+        }
+        if (elseStmt != null && !(elseStmt instanceof BlockStmtNode)) {
+            elseStmt = new BlockStmtNode(new ArrayList<>(Arrays.asList(elseStmt)), elseStmt.pos);
+        }
+        return new IfStmtNode((ExprNode)visit(ctx.expression()), thenStmt, elseStmt, new Position(ctx));
+    }
+
+    @Override
     public ASTNode visitWhileStmt(MxParser.WhileStmtContext ctx) {
         ExprNode cond = (ExprNode)visit(ctx.expression());
-        return new WhileStmtNode(cond, (StmtNode)visit(ctx.statement()), new Position(ctx));
+        var thenStmt = (StmtNode)visit(ctx.statement());
+        if (!(thenStmt instanceof BlockStmtNode)) {
+            thenStmt = new BlockStmtNode(new ArrayList<>(Arrays.asList(thenStmt)), thenStmt.pos);
+        }
+        return new WhileStmtNode(cond, thenStmt, new Position(ctx));
     }
 
     @Override
@@ -201,7 +216,11 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         if (ctx.incr != null) {
             incr = (ExprNode) visit(ctx.incr);
         }
-        return new ForStmtNode(init, cond, incr, (StmtNode)visit(ctx.statement()), new Position(ctx));
+        var thenStmt = (StmtNode)visit(ctx.statement());
+        if (!(thenStmt instanceof BlockStmtNode)) {
+            thenStmt = new BlockStmtNode(new ArrayList<>(Arrays.asList(thenStmt)), thenStmt.pos);
+        }
+        return new ForStmtNode(init, cond, incr, thenStmt, new Position(ctx));
     }
 
     @Override

@@ -113,6 +113,10 @@ public class SemanticChecker implements ASTVisitor {
         boolean pastReturned = returned;
         returned = false;
 
+        if (!it.id.equals(curClassType.name)) {
+            throw new SemanticError("Constructor name mismatched: " + it.id, it.pos);
+        }
+
         it.body.accept(this);
 
         returnTypes.pop();
@@ -207,7 +211,9 @@ public class SemanticChecker implements ASTVisitor {
             throw new SemanticError("IfStmtNode.condition type error", it.condition.pos);
         }
         it.thenStmt.accept(this);
-        it.elseStmt.accept(this);
+        if (it.elseStmt != null) {
+            it.elseStmt.accept(this);
+        }
     }
 
     @Override
