@@ -8,7 +8,7 @@ public class ControlStmtNode extends StmtNode {
     public enum Type {
         BREAK, CONTINUE
     }
-    Type type;
+    public Type type;
 
     public ControlStmtNode(Type type, Position pos) {
         super(pos);

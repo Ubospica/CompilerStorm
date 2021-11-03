@@ -3,8 +3,8 @@ package AST.Expression.Atom;
 import AST.ASTVisitor;
 import Util.Position;
 
-//expression like `a; //a is a variable`
 public class VarExprNode extends AtomExprNode {
+    public boolean isFunc = false;
     public String id;
 
     public VarExprNode(String id, Position pos) {

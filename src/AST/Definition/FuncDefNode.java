@@ -1,6 +1,7 @@
 package AST.Definition;
 
 import AST.*;
+import AST.Scope.Scope;
 import AST.Statement.BlockStmtNode;
 import AST.Statement.VarDefSubStmtNode;
 import Util.Position;
@@ -12,6 +13,8 @@ public class FuncDefNode extends DefNode {
     public String id;
     public ArrayList<VarDefSubStmtNode> paramList;
     public BlockStmtNode body;
+
+//    public Scope scope = null;
 
     public FuncDefNode(TypeNode type, String id, ArrayList<VarDefSubStmtNode> param, BlockStmtNode body, Position pos) {
         super(pos);

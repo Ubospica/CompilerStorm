@@ -2,3 +2,5 @@
 .git
 out
 bin
+*.tmp
+test.mx

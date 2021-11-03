@@ -6,8 +6,8 @@ import Util.Position;
 import java.util.ArrayList;
 
 public class FuncCallExprNode extends ExprNode {
-    ExprNode func;
-    ArrayList<ExprNode> argList;
+    public ExprNode func;
+    public ArrayList<ExprNode> argList;
 
     public FuncCallExprNode(ExprNode func, ArrayList<ExprNode> argList, Position pos) {
         super(pos);

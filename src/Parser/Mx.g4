@@ -40,6 +40,7 @@ expression
     : primary                                           # atomExpr
     // priority level 2
     | lambda                                            # lambdaExpr
+    | <assoc=right> newExpression                       # newExpr
     | expression op=('++'|'--')                         # suffixExpr
     | '(' expression ')'                                # parenExpr
     | expression op='.' Identifier                      # memberAccessExpr
@@ -48,7 +49,6 @@ expression
     // priority level 3
     | <assoc=right> op=('++'|'--') expression           # prefixExpr
     | <assoc=right> op=('+'|'-'|'!'|'~') expression     # prefixExpr
-    | <assoc=right> newExpression                       # newExpr
     //new delete * &
     // level 4 and more
     | src1=expression op=('*'|'/'|'%') src2=expression            # binaryExpr
@@ -62,7 +62,7 @@ expression
     | src1=expression op='&&' src2=expression                     # binaryExpr
     | src1=expression op='||' src2=expression                     # binaryExpr
     | <assoc=right> src1=expression op='=' src2=expression        # binaryExpr
-    | src1=expression op=',' src2=expression                      # binaryExpr
+//    | src1=expression op=',' src2=expression                      # binaryExpr
     ;
 
 primary : Identifier | literal | This;
@@ -72,11 +72,12 @@ expressionList
     ;
 
 newExpression
-    : New typeSub                                       # simpleNewExpr
-    | New typeSub errNewArraySize                       # errArrayNewExpr
+    : New typeSub errNewArraySize                       # errArrayNewExpr
     | New typeSub newArraySize                          # arrayNewExpr
     | New typeSub ('(' ')')?                            # classNewExpr
+    | New typeSub                                       # simpleNewExpr
     ;
+
 newArraySize : ('[' expression ']')+ ('[' ']')*;
 errNewArraySize : ('[' expression ']')* ('[' ']')+ ('[' expression ']')+ ('[' expression? ']')*;
 

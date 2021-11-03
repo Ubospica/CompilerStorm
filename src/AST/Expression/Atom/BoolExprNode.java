@@ -4,7 +4,7 @@ import AST.ASTVisitor;
 import Util.Position;
 
 public class BoolExprNode extends AtomExprNode {
-    boolean value;
+    public boolean value;
 
     public BoolExprNode(boolean value, Position pos) {
         super(pos);

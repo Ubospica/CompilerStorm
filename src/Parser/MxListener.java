@@ -366,18 +366,6 @@ public interface MxListener extends ParseTreeListener {
 	 */
 	void exitExpressionList(MxParser.ExpressionListContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code simpleNewExpr}
-	 * labeled alternative in {@link MxParser#newExpression}.
-	 * @param ctx the parse tree
-	 */
-	void enterSimpleNewExpr(MxParser.SimpleNewExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code simpleNewExpr}
-	 * labeled alternative in {@link MxParser#newExpression}.
-	 * @param ctx the parse tree
-	 */
-	void exitSimpleNewExpr(MxParser.SimpleNewExprContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code errArrayNewExpr}
 	 * labeled alternative in {@link MxParser#newExpression}.
 	 * @param ctx the parse tree
@@ -413,6 +401,18 @@ public interface MxListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitClassNewExpr(MxParser.ClassNewExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code simpleNewExpr}
+	 * labeled alternative in {@link MxParser#newExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterSimpleNewExpr(MxParser.SimpleNewExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code simpleNewExpr}
+	 * labeled alternative in {@link MxParser#newExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitSimpleNewExpr(MxParser.SimpleNewExprContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MxParser#newArraySize}.
 	 * @param ctx the parse tree

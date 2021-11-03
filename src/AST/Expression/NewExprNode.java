@@ -7,12 +7,12 @@ import Util.Position;
 import java.util.ArrayList;
 
 public class NewExprNode extends ExprNode {
-    public TypeNode type;
+    public TypeNode newType;
     public ArrayList<ExprNode> sizes;
 
-    public NewExprNode(TypeNode type, ArrayList<ExprNode> sizes, Position pos) {
+    public NewExprNode(TypeNode newType, ArrayList<ExprNode> sizes, Position pos) {
         super(pos);
-        this.type = type;
+        this.newType = newType;
         this.sizes = sizes;
     }
 

@@ -400,18 +400,6 @@ public class MxBaseListener implements MxListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSimpleNewExpr(MxParser.SimpleNewExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSimpleNewExpr(MxParser.SimpleNewExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterErrArrayNewExpr(MxParser.ErrArrayNewExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -443,6 +431,18 @@ public class MxBaseListener implements MxListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitClassNewExpr(MxParser.ClassNewExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSimpleNewExpr(MxParser.SimpleNewExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSimpleNewExpr(MxParser.SimpleNewExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

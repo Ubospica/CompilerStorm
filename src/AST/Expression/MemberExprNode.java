@@ -4,8 +4,9 @@ import AST.ASTVisitor;
 import Util.Position;
 
 public class MemberExprNode extends ExprNode {
-    ExprNode base;
-    String id;
+    public ExprNode base;
+    public String id;
+    public boolean isFunc = false;
 
     public MemberExprNode(ExprNode base, String id, Position pos) {
         super(pos);

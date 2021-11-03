@@ -1,6 +1,7 @@
 package AST.Definition;
 
 import AST.ASTVisitor;
+import AST.Scope.Scope;
 import AST.Statement.VarDefSubStmtNode;
 import Util.Position;
 
@@ -11,6 +12,8 @@ public class ClassDefNode extends DefNode {
     public ArrayList<VarDefSubStmtNode> field;
     public ArrayList<ConstructorDefNode> constructor;
     public ArrayList<FuncDefNode> method;
+
+//    public Scope scope = null;
 
     public ClassDefNode(String id, ArrayList<VarDefSubStmtNode> field,
                         ArrayList<ConstructorDefNode> constructor,
