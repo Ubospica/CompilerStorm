@@ -1,14 +1,18 @@
 package AST.Expression;
 
 import AST.ASTNode;
-import AST.Scope.Type.Type;
+import AST.Type.Type;
+import IR.Value.Value;
 import Util.Position;
 
 public abstract class ExprNode extends ASTNode {
-    public Type type;
-    public boolean assignable = false;
+	public Type type;
+	public boolean assignable = false;
 
-    public ExprNode(Position pos) {
-        super(pos);
-    }
+	public Value irValue = null;
+	public Value irPointer = null;
+
+	public ExprNode(Position pos) {
+		super(pos);
+	}
 }

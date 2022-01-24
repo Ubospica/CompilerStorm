@@ -1,4 +1,4 @@
-// Generated from //wsl$/Ubuntu/home/ubospica/courses/compiler/CompilerStorm/src/Parser\Mx.g4 by ANTLR 4.9.1
+// Generated from //wsl$/Ubuntu/home/ubospica/courses/compiler/CompilerStorm/src/Parser\Mx.g4 by ANTLR 4.9.2
 package Parser;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class MxParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.9.1", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.9.2", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -1413,6 +1413,56 @@ public class MxParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
+	public static class BinaryBoolExprContext extends ExpressionContext {
+		public ExpressionContext src1;
+		public Token op;
+		public ExpressionContext src2;
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public BinaryBoolExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof MxListener ) ((MxListener)listener).enterBinaryBoolExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof MxListener ) ((MxListener)listener).exitBinaryBoolExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof MxVisitor ) return ((MxVisitor<? extends T>)visitor).visitBinaryBoolExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class AssignExprContext extends ExpressionContext {
+		public ExpressionContext src1;
+		public Token op;
+		public ExpressionContext src2;
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public AssignExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof MxListener ) ((MxListener)listener).enterAssignExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof MxListener ) ((MxListener)listener).exitAssignExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof MxVisitor ) return ((MxVisitor<? extends T>)visitor).visitAssignExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
 	public static class ParenExprContext extends ExpressionContext {
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
@@ -1708,41 +1758,41 @@ public class MxParser extends Parser {
 						break;
 					case 9:
 						{
-						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
-						((BinaryExprContext)_localctx).src1 = _prevctx;
+						_localctx = new BinaryBoolExprContext(new ExpressionContext(_parentctx, _parentState));
+						((BinaryBoolExprContext)_localctx).src1 = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(207);
 						if (!(precpred(_ctx, 3))) throw new FailedPredicateException(this, "precpred(_ctx, 3)");
 						setState(208);
-						((BinaryExprContext)_localctx).op = match(T__30);
+						((BinaryBoolExprContext)_localctx).op = match(T__30);
 						setState(209);
-						((BinaryExprContext)_localctx).src2 = expression(4);
+						((BinaryBoolExprContext)_localctx).src2 = expression(4);
 						}
 						break;
 					case 10:
 						{
-						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
-						((BinaryExprContext)_localctx).src1 = _prevctx;
+						_localctx = new BinaryBoolExprContext(new ExpressionContext(_parentctx, _parentState));
+						((BinaryBoolExprContext)_localctx).src1 = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(210);
 						if (!(precpred(_ctx, 2))) throw new FailedPredicateException(this, "precpred(_ctx, 2)");
 						setState(211);
-						((BinaryExprContext)_localctx).op = match(T__31);
+						((BinaryBoolExprContext)_localctx).op = match(T__31);
 						setState(212);
-						((BinaryExprContext)_localctx).src2 = expression(3);
+						((BinaryBoolExprContext)_localctx).src2 = expression(3);
 						}
 						break;
 					case 11:
 						{
-						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
-						((BinaryExprContext)_localctx).src1 = _prevctx;
+						_localctx = new AssignExprContext(new ExpressionContext(_parentctx, _parentState));
+						((AssignExprContext)_localctx).src1 = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(213);
 						if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
 						setState(214);
-						((BinaryExprContext)_localctx).op = match(T__6);
+						((AssignExprContext)_localctx).op = match(T__6);
 						setState(215);
-						((BinaryExprContext)_localctx).src2 = expression(1);
+						((AssignExprContext)_localctx).src2 = expression(1);
 						}
 						break;
 					case 12:

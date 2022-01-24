@@ -4,3 +4,7 @@ out
 bin
 *.tmp
 test.mx
+tmp/
+a.out
+a.ll
+a.mx

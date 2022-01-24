@@ -49,7 +49,7 @@ expression
     // priority level 3
     | <assoc=right> op=('++'|'--') expression           # prefixExpr
     | <assoc=right> op=('+'|'-'|'!'|'~') expression     # prefixExpr
-    //new delete * &
+    // new delete * &
     // level 4 and more
     | src1=expression op=('*'|'/'|'%') src2=expression            # binaryExpr
     | src1=expression op=('+'|'-') src2=expression                # binaryExpr
@@ -59,9 +59,9 @@ expression
     | src1=expression op='&' src2=expression                      # binaryExpr
     | src1=expression op='^' src2=expression                      # binaryExpr
     | src1=expression op='|' src2=expression                      # binaryExpr
-    | src1=expression op='&&' src2=expression                     # binaryExpr
-    | src1=expression op='||' src2=expression                     # binaryExpr
-    | <assoc=right> src1=expression op='=' src2=expression        # binaryExpr
+    | src1=expression op='&&' src2=expression                     # binaryBoolExpr
+    | src1=expression op='||' src2=expression                     # binaryBoolExpr
+    | <assoc=right> src1=expression op='=' src2=expression        # assignExpr
 //    | src1=expression op=',' src2=expression                      # binaryExpr
     ;
 
