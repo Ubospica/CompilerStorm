@@ -27,7 +27,8 @@ public class IntType extends Type {
 
 	public int getSize() {
 		if (size == -1) {
-			size = (width == 1 ? 1 : width / 8);
+//			size = (width == 1 ? 1 : width / 8);
+			size = 4; // four byte alignment
 		}
 		return size;
 	}

@@ -23,6 +23,10 @@ public class StructType extends Type {
 		return size;
 	}
 
+	public int getDelta(int cnt) {
+		return cnt * 4;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;

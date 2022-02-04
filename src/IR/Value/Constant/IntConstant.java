@@ -4,7 +4,7 @@ import IR.Pass;
 import IR.Type.IntType;
 
 public class IntConstant extends Constant {
-	public long value;
+	public int value;
 
 	public static IntConstant TRUE = new IntConstant(1, 1);
 	public static IntConstant FALSE = new IntConstant(0, 1);

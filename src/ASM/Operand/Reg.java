@@ -25,6 +25,7 @@ abstract public class Reg extends Operand {
 	public static ArrayList<PhyReg> regList = new ArrayList<>();
 	public static ArrayList<PhyReg> callerSaveReg = new ArrayList<>();
 	public static ArrayList<PhyReg> calleeSaveReg = new ArrayList<>();
+	public static PhyReg zero, ra, sp, s0, a0;
 
 	private static final List<String> regIdList = Arrays.asList(
 			"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
@@ -46,6 +47,12 @@ abstract public class Reg extends Operand {
 				callerSaveReg.add(reg);
 			}
 		});
+		// bad practice...
+		zero = getRegById("zero");
+		ra = getRegById("ra");
+		sp = getRegById("sp");
+		a0 = getRegById("a0");
+		s0 = getRegById("s0");
 	}
 
 	public static PhyReg getRegById(String name) {

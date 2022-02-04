@@ -1,0 +1,24 @@
+package ASM.Inst;
+
+import ASM.Operand.Operand;
+import ASM.Operand.Reg;
+import ASM.Operand.Symbol;
+
+/**
+ *  add rd, rs1, rs2
+ *  addi rd, rs, val
+ */
+public class Lla extends Inst {
+	public Reg rd;
+	public Symbol symbol;
+
+	public Lla(Reg rd, Symbol symbol) {
+		this.rd = rd;
+		this.symbol = symbol;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("lla\t%s, %s", rd, symbol);
+	}
+}

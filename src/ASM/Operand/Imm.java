@@ -3,13 +3,24 @@ package ASM.Operand;
 public class Imm extends Operand {
 	public int value;
 	public static final int base = 1 << 12;
+	public boolean determined;
 
 	public Imm(int value) {
 		this.value = value;
+		determined = true;
+	}
+
+	public Imm() {
+		this.value = 0;
+		determined = false;
 	}
 
 	public boolean isLow() {
-		return value < base;
+		return value < base && value >= -base;
+	}
+
+	public static boolean isLow(int value) {
+		return value < base && value >= -base;
 	}
 
 	public Imm high() {

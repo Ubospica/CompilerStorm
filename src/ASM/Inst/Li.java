@@ -24,12 +24,6 @@ public class Li extends Inst {
 
 	@Override
 	public String toString() {
-		if (imm.isLow()) {
-			return String.format("li\t%s, %s", rd, imm);
-		} else {
-			return String.format("lui\t%s, %s", rd, imm.high()) +
-					"\n" + ASMPrinter.indent +
-					String.format("addi\t%s, %s, %s", rd, rd, imm.high());
-		}
+		return String.format("li\t%s, %s", rd, imm);
 	}
 }

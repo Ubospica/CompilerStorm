@@ -13,6 +13,7 @@ public class BinaryInst extends Inst {
 		// arithmetic
 		ADD_NSW, SUB_NSW, MUL_NSW, SDIV, SREM,
 		// bitwise
+		// ASHR: sign extended
 		SHL, ASHR, AND, OR, XOR,
 	}
 	public OpType opType;
