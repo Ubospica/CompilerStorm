@@ -33,6 +33,14 @@ public class StrConstant extends Constant {
 				.replace("\"", "\\22") + "\\00";
 	}
 
+	public String getAsmString() {
+		return value.replace("\\", "\\\\")
+				.replace("\n", "\\n")
+				.replace("\r", "\\r")
+				.replace("\t", "\\t")
+				.replace("\"", "\\\"");
+	}
+
 	public void accept(Pass pass) {
 		pass.visit(this);
 	}

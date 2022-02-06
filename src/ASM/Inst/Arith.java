@@ -9,10 +9,9 @@ import ASM.Operand.Reg;
  */
 public class Arith extends Inst {
 	public String op;
-	public Reg rd, rs1;
-	public Operand rs2;
 
 	public Arith(String op, Reg rd, Reg rs1, Operand rs2) {
+		this.op = op;
 		this.rd = rd;
 		this.rs1 = rs1;
 		this.rs2 = rs2;
@@ -20,6 +19,7 @@ public class Arith extends Inst {
 
 	// one op: seqz rd, rs1
 	public Arith(String op, Reg rd, Reg rs1) {
+		this.op = op;
 		this.rd = rd;
 		this.rs1 = rs1;
 		this.rs2 = null;

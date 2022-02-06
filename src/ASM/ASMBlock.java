@@ -20,4 +20,8 @@ public class ASMBlock {
 	public void addInst(Inst inst) {
 		insts.add(inst);
 	}
+
+	public String toString() {
+		return id;
+	}
 }

@@ -20,6 +20,7 @@ import IR.Value.Value;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ASMBuilder implements Pass {
 
@@ -28,6 +29,7 @@ public class ASMBuilder implements Pass {
 	private HashMap<Function, ASMFunc> funcMapping = new HashMap<>();
 	private HashMap<BasicBlock, ASMBlock> blockMapping = new HashMap<>();
 	private HashMap<Value, Reg> valueMapping = new HashMap<>();
+	private HashMap<Reg, AtomicInteger> regUseCnt = new HashMap<>();
 
 	private ASMFunc currentFunc = null;
 	private ASMBlock currentBlock = null;
@@ -41,11 +43,20 @@ public class ASMBuilder implements Pass {
 
 	public void visit(Module it) {
 		it.gFunc.forEach((k, v) -> {
-			var asmFunc = new ASMFunc(v.id);
-			funcMapping.put(v, asmFunc);
-			root.funcs.add(asmFunc);
+			if (!v.blocks.isEmpty()) {
+				var asmFunc = new ASMFunc(v.id);
+				funcMapping.put(v, asmFunc);
+				root.funcs.add(asmFunc);
+			}
 		});
-		it.gFunc.forEach((k, v) -> v.accept(this));
+		root.gConstant = it.gConstant;
+		root.gVar = it.gVar;
+		it.gFunc.forEach((k, v) -> {
+			if (!v.blocks.isEmpty()) {
+				v.accept(this);
+			}
+		});
+		removeUselessInst();
 	}
 
 	public void visit(Function it) {
@@ -63,7 +74,7 @@ public class ASMBuilder implements Pass {
 
 		currentBlock = asmFunc.blocks.get(0);
 
-		currentBlock.addInst(new Arith("addi", Reg.sp, Reg.sp, new Imm()));
+		currentBlock.addInst(new Arith("add", Reg.sp, Reg.sp, new Imm(0)));
 
 		// save callee-save reg to tmp reg
 		Reg.calleeSaveReg.forEach(x -> {
@@ -95,6 +106,7 @@ public class ASMBuilder implements Pass {
 
 		it.blocks.forEach(x -> x.accept(this));
 
+		asmFunc.blocks.add(funcEndBlock);
 		currentBlock = funcEndBlock;
 		// restore saved reg
 		asmFunc.savedRegs.forEach(x -> {
@@ -166,7 +178,7 @@ public class ASMBuilder implements Pass {
 		} else if (it instanceof CallInst newIt) {
 			int cnt = 0;
 			ASMFunc dest = null;
-			for (var x : newIt.useList) {
+			for (var x : newIt.operandList) {
 				if (cnt == 0) {
 					dest = funcMapping.get((Function) x.val);
 				} else if (cnt <= 8){ // 1...8: copy to a[cnt-1]
@@ -178,11 +190,12 @@ public class ASMBuilder implements Pass {
 				}
 				++cnt;
 			}
+			currentBlock.addInst(new Call(dest));
 		} else if (it instanceof GEPInst newIt) {
 			int cnt = 0;
 			Reg prevReg = null;
 			Type prevType = null;
-			for (var x : newIt.useList) {
+			for (var x : newIt.operandList) {
 				if (cnt == 0) {
 					prevReg = getValueReg(x.val);
 					prevType = x.val.type;
@@ -288,10 +301,10 @@ public class ASMBuilder implements Pass {
 				iter.add(new Mv(rd, getValueReg(x.a)));
 			}
 		} else if (it instanceof RetInst newIt) {
-			if (!newIt.useList.isEmpty()) {
+			if (!newIt.operandList.isEmpty()) {
 				currentBlock.addInst(new Mv(Reg.a0, getValueReg(newIt.getUse(0))));
 			}
-			currentBlock.addInst(new Ret());
+			currentBlock.addInst(new J(funcEndBlock));
 		} else if (it instanceof UnreachableInst newIt) {
 			// abnormal return
 			currentBlock.addInst(new Ret());
@@ -311,6 +324,48 @@ public class ASMBuilder implements Pass {
 			case OR -> "or";
 			case XOR -> "xor";
 		};
+	}
+
+	void addRegUse(Reg reg) {
+		var tmp = regUseCnt.get(reg);
+		if (tmp == null) {
+			regUseCnt.put(reg, new AtomicInteger(1));
+		} else {
+			tmp.incrementAndGet();
+		}
+	}
+
+	void delRegUse(Reg reg) {
+		var tmp = regUseCnt.get(reg);
+		tmp.decrementAndGet();
+	}
+
+	boolean regNotUse(Reg reg) {
+		var tmp = regUseCnt.get(reg);
+		return reg instanceof VirtualReg && (tmp == null || tmp.get() == 0);
+	}
+
+	private void removeUselessInst() {
+		for (var x : root.funcs) {
+			regUseCnt.clear();
+			for (var y : x.blocks) {
+				for (var z : y.insts) {
+					if (z.rs1 != null) addRegUse(z.rs1);
+					if (z.rs2 instanceof Reg reg) addRegUse(reg);
+				}
+			}
+			for (int tmp1 = x.blocks.size() - 1; tmp1 >= 0; --tmp1) {
+				var y = x.blocks.get(tmp1);
+				for (int tmp2 = y.insts.size() - 1; tmp2 >= 0; --tmp2) {
+					var z = y.insts.get(tmp2);
+					if (z.rd != null && (!(z instanceof Sw)) && regNotUse(z.rd)) {
+						y.insts.remove(tmp2);
+						if (z.rs1 != null) delRegUse(z.rs1);
+						if (z.rs2 instanceof Reg reg) delRegUse(reg);
+					}
+				}
+			}
+		}
 	}
 
 }

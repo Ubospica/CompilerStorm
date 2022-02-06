@@ -10,27 +10,25 @@ import ASM.Operand.Symbol;
  *  sw rs2, symbol, rs1
  */
 public class Sw extends Inst {
-	public Reg rs2, rs1;
-	public Operand offset;
 
-	public Sw(Reg rs2, Reg rs1, Imm offset) {
+	public Sw(Reg rs2, Reg rs1, Imm imm) {
 		this.rs2 = rs2;
 		this.rs1 = rs1;
-		this.offset = offset;
+		this.imm = imm;
 	}
 
-	public Sw(Reg rs2, Reg rs1, Symbol offset) {
+	public Sw(Reg rs2, Reg rt, Symbol imm) {
 		this.rs2 = rs2;
-		this.rs1 = rs1;
-		this.offset = offset;
+		this.rd = rt;
+		this.imm = imm;
 	}
 
 	@Override
 	public String toString() {
-		if (offset instanceof Symbol sVal) {
-			return String.format("sw\t%s, %s, %s", rs2, sVal, rs1);
+		if (imm instanceof Symbol sVal) {
+			return String.format("sw\t%s, %s, %s", rs2, sVal, rd);
 		} else {
-			return String.format("sw\t%s, %s(%s)", rs2, offset, rs1);
+			return String.format("sw\t%s, %s(%s)", rs2, imm, rs1);
 		}
 	}
 }

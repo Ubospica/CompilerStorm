@@ -117,6 +117,7 @@ public class IRBuilder implements ASTVisitor {
 
 
 		firstPass(topModule);
+//		new IRPrinter(null).giveName(topModule);
 	}
 
 	// function id, return type, argument type

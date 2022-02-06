@@ -11,20 +11,18 @@ import Backend.ASMPrinter;
  *  lui rd, imm
  */
 public class Lui extends Inst {
-	public Reg rd;
-	public Operand val;
 
-	public Lui(Reg rd, Operand val) {
+	public Lui(Reg rd, Operand imm) {
 		this.rd = rd;
-		this.val = val;
+		this.imm = imm;
 	}
 
 	@Override
 	public String toString() {
-		if (val instanceof Symbol sVal) {
+		if (imm instanceof Symbol sVal) {
 			return String.format("lui %s, %s", rd, sVal.hi());
 		} else {
-			return String.format("lui %s, %s", rd, val);
+			return String.format("lui %s, %s", rd, imm);
 		}
 	}
 }

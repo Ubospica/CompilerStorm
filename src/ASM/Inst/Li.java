@@ -13,8 +13,6 @@ import Backend.ASMPrinter;
  *   addi rd, rd, %lo(imm)
  */
 public class Li extends Inst {
-	public Reg rd;
-	public Imm imm;
 	public static final int base = 1 << 12;
 
 	public Li(Reg rd, Imm imm) {

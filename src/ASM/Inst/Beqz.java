@@ -10,7 +10,6 @@ import ASM.Operand.Reg;
  *  beqz rs1, offset
  */
 public class Beqz extends Inst {
-	public Reg rs1;
 	public ASMBlock dest;
 
 	public Beqz(Reg rs1, ASMBlock dest) {

@@ -13,26 +13,24 @@ import org.antlr.v4.codegen.model.SrcOp;
  *  lw rd, symbol
  */
 public class Lw extends Inst {
-	public Reg rd = null, rs1 = null;
-	public Operand offset = null;
 
-	public Lw(Reg rd, Reg rs1, Imm offset) {
+	public Lw(Reg rd, Reg rs1, Imm imm) {
 		this.rd = rd;
 		this.rs1 = rs1;
-		this.offset = offset;
+		this.imm = imm;
 	}
 
 	public Lw(Reg rd, Symbol offset) {
 		this.rd = rd;
-		this.offset = offset;
+		this.imm = offset;
 	}
 
 	@Override
 	public String toString() {
-		if (offset instanceof Symbol sVal){
+		if (imm instanceof Symbol sVal){
 			return String.format("lw\t%s, %s", rd, sVal);
 		} else {
-			return String.format("lw\t%s, %s(%s)", rd, offset, rs1);
+			return String.format("lw\t%s, %s(%s)", rd, imm, rs1);
 		}
 	}
 }

@@ -7,7 +7,6 @@ import ASM.Operand.Reg;
  *  mv rd, rs1
  */
 public class Mv extends Inst {
-	public Reg rd, rs1;
 
 	public Mv(Reg rd, Reg rs1) {
 		this.rd = rd;

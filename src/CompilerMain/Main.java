@@ -3,6 +3,8 @@ package CompilerMain;
 import AST.Definition.ProgramNode;
 import AST.Scope.Scope;
 import AST.Type.Type;
+import Backend.ASMBuilder;
+import Backend.ASMPrinter;
 import Backend.IRPrinter;
 import Builtin.BuiltinFunc;
 import Frontend.ASTBuilder;
@@ -29,6 +31,7 @@ public class Main {
 		String inputName = "a.mx";
 		InputStream input = new FileInputStream(inputName);
 		PrintStream output = new PrintStream("a.ll");
+		PrintStream outputAsm = new PrintStream("a.s");
 
 		// stdin & stdout
 //		InputStream input = System.in;
@@ -79,14 +82,13 @@ public class Main {
 			var irBuilder = new IRBuilder("a.mx");
 			irBuilder.visit(astRoot);
 			var topModule = irBuilder.topModule;
-			new IRPrinter(output).visit(topModule);
+//			new IRPrinter(output).visit(topModule);
 
 			if (stage <= 3) return;
 
-//			mainFn f = new mainFn();
-//			new IRBuilder(f, gScope).visit(astRoot);
-//			// new IRPrinter(System.out).visitFn(f);
-//
+			// Inst selection and regalloc and printing
+			var asmRoot = new ASMBuilder(topModule).root;
+			new ASMPrinter(outputAsm).visit(asmRoot);
 //			AsmFn asmF = new AsmFn();
 //			new InstSelector(asmF).visitFn(f);
 //			new RegAlloc(asmF).work();

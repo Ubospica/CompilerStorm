@@ -9,16 +9,14 @@ import ASM.Operand.Symbol;
  *  addi rd, rs, val
  */
 public class Lla extends Inst {
-	public Reg rd;
-	public Symbol symbol;
 
 	public Lla(Reg rd, Symbol symbol) {
 		this.rd = rd;
-		this.symbol = symbol;
+		this.imm = symbol;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("lla\t%s, %s", rd, symbol);
+		return String.format("lla\t%s, %s", rd, imm);
 	}
 }
