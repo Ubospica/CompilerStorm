@@ -57,7 +57,7 @@ abstract public class Reg extends Operand {
 		calleeSaveRegList.forEach(x -> calleeSaveReg.add(getRegById(x)));
 		callerSaveRegList.forEach(x -> callerSaveReg.add(getRegById(x)));
 		colorRegList.forEach(x -> colorReg.add(getRegById(x)));
-		// bad practice...
+		// maybe bad practice...
 		zero = getRegById("zero");
 		ra = getRegById("ra");
 		sp = getRegById("sp");

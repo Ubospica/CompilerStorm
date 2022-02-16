@@ -902,7 +902,7 @@ public class IRBuilder implements ASTVisitor {
 			// res.irValue: func found in global
 			// res.classFunc: func found in class
 			if (currentStruct != null) {
-				it.classFunc = topModule.gFunc.get(currentStruct + "." + it.id);
+				it.classFunc = topModule.gFunc.get(currentStruct.id + "." + it.id);
 			}
 			it.irValue = topModule.gFunc.get(it.id);
 		} else {

@@ -70,9 +70,6 @@ public class RegAllocator {
 	}
 
 	void addEdge(Reg lhs, Reg rhs) {
-//		if (lhs.id.equals("tmp7") || rhs.id.equals("tmp7")) {
-//			System.out.println("www");
-//		}
 		if (lhs != rhs && !isConnected(lhs, rhs)) {
 			adjSet.add(new Pair<>(lhs, rhs));
 			adjSet.add(new Pair<>(rhs, lhs));
@@ -259,7 +256,8 @@ public class RegAllocator {
 				var inst = iter.next();
 				var use = inst.getUseList();
 				var def = inst.getDefList();
-				if (inst instanceof Mv newInst) {
+				// mv rd, zero cannot be merged
+				if (inst instanceof Mv newInst && newInst.rs1 != Reg.zero) {
 					use.forEach(live::remove);
 					use.forEach(n -> moveList.get(n).add(newInst));
 					def.forEach(n -> moveList.get(n).add(newInst));
@@ -468,9 +466,6 @@ public class RegAllocator {
 	void assignColors() {
 		while (!selectStack.isEmpty()) {
 			var n = selectStack.pop();
-//			if (n.id.equals("tmp7")) {
-//				System.out.println("wwww");
-//			}
 			var okColors = new ArrayList<>(Reg.colorReg);
 			adjList.get(n).forEach(w -> {
 				var w1 = getAlias(w);

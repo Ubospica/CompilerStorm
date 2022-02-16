@@ -181,9 +181,6 @@ public class ASMBuilder implements Pass {
 			var rs2 = getValueReg(newIt.getUse(1));
 			var rd = getValueReg(newIt);
 			String op = irOptoAsmStr(newIt.opType);
-//			if (op.equals("mul")) {
-//				System.out.println("www");
-//			}
 			currentBlock.addInst(new Arith(op, rd, rs1, rs2));
 		} else if (it instanceof BitcastInst newIt) {
 			currentBlock.addInst(new Mv(getValueReg(newIt), getValueReg(newIt.getUse(0))));

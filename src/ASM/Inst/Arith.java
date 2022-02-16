@@ -18,9 +18,6 @@ public class Arith extends Inst {
 	}
 
 	public Arith(String op, Reg rd, Reg rs1, Imm imm) {
-//		if (op.equals("mul")) {
-//			System.out.println("qwq");
-//		}
 		this.op = op;
 		this.rd = rd;
 		this.rs1 = rs1;
