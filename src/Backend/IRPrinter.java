@@ -5,7 +5,10 @@ import IR.Pass;
 import IR.Type.FuncType;
 import IR.Type.PointerType;
 import IR.Type.StructType;
-import IR.Value.Constant.*;
+import IR.Value.Constant.IntConstant;
+import IR.Value.Constant.NullConstant;
+import IR.Value.Constant.StrConstant;
+import IR.Value.Constant.ZeroInitConstant;
 import IR.Value.Global.BasicBlock;
 import IR.Value.Global.Function;
 import IR.Value.Global.Module;
@@ -63,7 +66,7 @@ public class IRPrinter implements Pass {
 		it.gVar.forEach((k, v) -> getId(v, true));
 		it.gFunc.forEach((k, v) -> {
 			getId(v, true);
-			v.argu.forEach(x -> getId(x, false));
+			v.arg.forEach(x -> getId(x, false));
 			v.blocks.forEach(x -> {
 				getId(x, false);
 				x.insts.forEach(x1 -> {
@@ -78,7 +81,7 @@ public class IRPrinter implements Pass {
 
 	// global
 	public void visit(StructType it) {
-		out.printf("%s = type { ", it.id);
+		out.printf("%s = type { ", it.printId);
 		for (int i = 0; i < it.varType.size(); ++i) {
 			out.print(it.varType.get(i).toString());
 			out.print(i == it.varType.size() - 1 ? "" : ", ");
@@ -92,7 +95,7 @@ public class IRPrinter implements Pass {
 
 	// global constant
 	public void visit(StrConstant it) {
-		out.printf("%s = private unnamed_addr constant %s c\"%s\"\n", it.id,
+		out.printf("%s = private unnamed_addr constant %s c\"%s\"\n", it.printId,
 				((PointerType)it.type).getDereference().toString(), it.getIrString());
 	}
 
@@ -107,12 +110,12 @@ public class IRPrinter implements Pass {
 	public void visit(Variable it) {
 		if (!inFunc) {
 			// global variable; initValue != null
-			out.printf("%s = global ", it.id);
+			out.printf("%s = global ", it.printId);
 			it.initValue.accept(this);
 			out.print("\n");
 		} else {
 			// function argument
-			out.printf("%s %s", it.type.toString(), it.id);
+			out.printf("%s %s", it.type.toString(), it.printId);
 		}
 	}
 
@@ -120,7 +123,7 @@ public class IRPrinter implements Pass {
 		// function declaration
 		if (it.blocks.isEmpty()) {
 			var funcType = (FuncType)it.type;
-			out.printf("declare %s %s(", funcType.returnType.toString(), it.id);
+			out.printf("declare %s %s(", funcType.returnType.toString(), it.printId);
 			for (int i = 0; i < funcType.argType.size(); ++i) {
 				out.print(funcType.argType.get(i).toString());
 				out.print(i == funcType.argType.size() - 1 ? "" : ", ");
@@ -128,10 +131,10 @@ public class IRPrinter implements Pass {
 			out.print(")\n");
 		} else {
 			// function definition
-			out.printf("define %s %s(", ((FuncType) it.type).returnType.toString(), it.id);
-			for (int i = 0; i < it.argu.size(); ++i) {
-				it.argu.get(i).accept(this);
-				out.print(i == it.argu.size() - 1 ? "" : ", ");
+			out.printf("define %s %s(", ((FuncType) it.type).returnType.toString(), it.printId);
+			for (int i = 0; i < it.arg.size(); ++i) {
+				it.arg.get(i).accept(this);
+				out.print(i == it.arg.size() - 1 ? "" : ", ");
 			}
 			out.print(") {\n");
 			for (int i = 0; i < it.blocks.size(); ++i) {
@@ -143,7 +146,7 @@ public class IRPrinter implements Pass {
 	}
 
 	public void visit(BasicBlock it) {
-		out.printf("%s:\n", it.id.substring(1));
+		out.printf("%s:\n", it.printId.substring(1));
 		it.insts.forEach(x -> {
 			out.print(indent);
 			x.accept(this);
@@ -153,7 +156,7 @@ public class IRPrinter implements Pass {
 
 	public void visit(Inst it) {
 		if (!it.useList.isEmpty()) {
-			out.printf("%s = ", it.id);
+			out.printf("%s = ", it.printId);
 		}
 		if (it instanceof AllocaInst newIt) {
 			out.printf("alloca %s", ((PointerType)newIt.type).getDereference().toString());
@@ -237,7 +240,7 @@ public class IRPrinter implements Pass {
 		} else if (val instanceof ZeroInitConstant) {
 			return "zeroinitializer";
 		} else {
-			return val.id;
+			return val.printId;
 		}
 	}
 
@@ -288,10 +291,10 @@ public class IRPrinter implements Pass {
 	}
 
 	private void getId(Value val, boolean isGlobal) {
-		val.id = getId(val.id, isGlobal);
+		val.printId = getId(val.id, isGlobal);
 	}
 
 	private void getId(StructType val, boolean isGlobal) {
-		val.id = getId(val.id, isGlobal);
+		val.printId = getId(val.id, isGlobal);
 	}
 }

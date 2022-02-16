@@ -1,10 +1,5 @@
 package IR.Type;
 
-import AST.Definition.ClassDefNode;
-import AST.Type.ClassType;
-
-import java.util.Objects;
-
 public class Type {
 	public final TypeEnum basicType;
 
@@ -15,6 +10,10 @@ public class Type {
 
 	public Type(TypeEnum basicType) {
 		this.basicType = basicType;
+	}
+
+	public boolean isVoid() {
+		return basicType == TypeEnum.VOID;
 	}
 
 	@Override

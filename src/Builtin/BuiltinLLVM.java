@@ -6,7 +6,6 @@ import IR.Type.PointerType;
 import IR.Type.Type;
 import IR.Value.Global.Function;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,7 +43,7 @@ public final class BuiltinLLVM {
 			new Function(new FuncType(I8STAR, INT32), "toString"),
 			new Function(new FuncType(I8STAR, INT32), "__mx_builtin_malloc"),
 			new Function(new FuncType(VOID, I8STAR, INT32, INT32), "__mx_builtin_memset"),
-			new Function(new FuncType(INT1, I8STAR, I8STAR), "__mx_builtin_strcmp"),
+			new Function(new FuncType(INT32, I8STAR, I8STAR), "__mx_builtin_strcmp"),
 			new Function(new FuncType(I8STAR, I8STAR, I8STAR), "__mx_builtin_strcat"),
 			new Function(new FuncType(INT32, I8STAR), "__mx_str_length"),
 			new Function(new FuncType(I8STAR, I8STAR, INT32, INT32), "__mx_str_substring"),

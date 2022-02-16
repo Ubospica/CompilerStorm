@@ -6,6 +6,7 @@ import java.util.Objects;
 
 public class StructType extends Type {
 	public String id;
+	public String printId;
 	public ArrayList<Type> varType = new ArrayList<>();
 	public HashMap<String, Integer> fieldIdx = new HashMap<>();
 
@@ -38,6 +39,6 @@ public class StructType extends Type {
 
 	@Override
 	public String toString() {
-		return id;
+		return printId;
 	}
 }

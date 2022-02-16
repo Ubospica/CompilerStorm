@@ -5,14 +5,17 @@ public class Imm extends Operand {
 	public static final int base = 1 << 12;
 	public boolean determined;
 
-	public Imm(int value) {
+	public Imm(int value, boolean determined) {
 		this.value = value;
-		determined = true;
+		this.determined = determined;
+	}
+
+	public Imm(int value) {
+		this(value, true);
 	}
 
 	public Imm() {
-		this.value = 0;
-		determined = false;
+		this(0, false);
 	}
 
 	public boolean isLow() {

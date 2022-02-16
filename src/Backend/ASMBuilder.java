@@ -4,27 +4,38 @@ import ASM.ASMBlock;
 import ASM.ASMFunc;
 import ASM.ASMRoot;
 import ASM.Inst.*;
-import ASM.Operand.*;
+import ASM.Operand.Imm;
+import ASM.Operand.Reg;
+import ASM.Operand.Symbol;
+import ASM.Operand.VirtualReg;
 import IR.Pass;
 import IR.Type.PointerType;
 import IR.Type.StructType;
 import IR.Type.Type;
-import IR.Value.Constant.*;
+import IR.Value.Constant.IntConstant;
+import IR.Value.Constant.NullConstant;
+import IR.Value.Constant.StrConstant;
 import IR.Value.Global.BasicBlock;
 import IR.Value.Global.Function;
 import IR.Value.Global.Module;
 import IR.Value.Global.Variable;
-import IR.Value.Inst.*;
 import IR.Value.Inst.Inst;
+import IR.Value.Inst.*;
 import IR.Value.Value;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.lang.Math.max;
+
+
+// todo: merge connected blocks
 public class ASMBuilder implements Pass {
 
 	public ASMRoot root;
+
+	private Module irRoot;
 
 	private HashMap<Function, ASMFunc> funcMapping = new HashMap<>();
 	private HashMap<BasicBlock, ASMBlock> blockMapping = new HashMap<>();
@@ -36,16 +47,21 @@ public class ASMBuilder implements Pass {
 	private ASMBlock funcEndBlock = null;
 
 
-	public ASMBuilder(Module it) {
-		root = new ASMRoot(it.filename);
-		visit(it);
+	public ASMBuilder(Module irRoot) {
+		this.irRoot = irRoot;
+		root = new ASMRoot(irRoot.filename);
+	}
+
+	public ASMRoot work() {
+		visit(irRoot);
+		return root;
 	}
 
 	public void visit(Module it) {
 		it.gFunc.forEach((k, v) -> {
+			var asmFunc = new ASMFunc(v.id, v.arg.size());
+			funcMapping.put(v, asmFunc);
 			if (!v.blocks.isEmpty()) {
-				var asmFunc = new ASMFunc(v.id);
-				funcMapping.put(v, asmFunc);
 				root.funcs.add(asmFunc);
 			}
 		});
@@ -57,6 +73,7 @@ public class ASMBuilder implements Pass {
 			}
 		});
 		removeUselessInst();
+		giveName();
 	}
 
 	public void visit(Function it) {
@@ -66,6 +83,7 @@ public class ASMBuilder implements Pass {
 		blockMapping.clear();
 		valueMapping.clear();
 
+		// add block mapping
 		it.blocks.forEach(x -> {
 			var asmBlock = new ASMBlock(it.id, x.id);
 			blockMapping.put(x, asmBlock);
@@ -74,7 +92,8 @@ public class ASMBuilder implements Pass {
 
 		currentBlock = asmFunc.blocks.get(0);
 
-		currentBlock.addInst(new Arith("add", Reg.sp, Reg.sp, new Imm(0)));
+		// move stack pointer
+		currentBlock.addInst(new Arith("add", Reg.sp, Reg.sp, new Imm()));
 
 		// save callee-save reg to tmp reg
 		Reg.calleeSaveReg.forEach(x -> {
@@ -90,7 +109,7 @@ public class ASMBuilder implements Pass {
 
 		// load arguments to tmp reg
 		int offset = 0;
-		for (int i = 0; i < it.argu.size(); ++i) {
+		for (int i = 0; i < it.arg.size(); ++i) {
 			var vReg = new VirtualReg();
 			if (i < 8) {
 				currentBlock.addInst(new Mv(vReg, Reg.getRegById("a" + i)));
@@ -98,7 +117,7 @@ public class ASMBuilder implements Pass {
 				currentBlock.addInst(new Lw(vReg, Reg.sp, new Imm(offset)));
 				offset += 4;
 			}
-			valueMapping.put(it.argu.get(i), vReg);
+			valueMapping.put(it.arg.get(i), vReg);
 		}
 
 		// function call epilogue
@@ -112,6 +131,7 @@ public class ASMBuilder implements Pass {
 		asmFunc.savedRegs.forEach(x -> {
 			currentBlock.addInst(new Mv(x.a, x.b));
 		});
+		currentBlock.addInst(new Arith("add", Reg.sp, Reg.sp, new Imm()));
 		currentBlock.addInst(new Ret());
 	}
 
@@ -120,26 +140,27 @@ public class ASMBuilder implements Pass {
 	// 2. Inst
 	// 3. Constant
 	public Reg getValueReg(Value val) {
-		var reg = valueMapping.get(val);
-		if (reg == null) {
-			if (val instanceof IntConstant newVal) {
-				var valImm = new Imm(newVal.value);
-				reg = new VirtualReg();
-				if (valImm.isLow()) {
-					currentBlock.addInst(new Li(reg, valImm));
-				} else {
-					currentBlock.addInst(new Lui(reg, valImm.high()));
-					currentBlock.addInst(new Arith("add", reg, reg, valImm.low()));
-				}
-			} else if (val instanceof NullConstant newVal) {
-				reg = Reg.zero;
-			} else if (val instanceof StrConstant newVal) {
-				reg = new VirtualReg();
-				currentBlock.addInst(new Lla(reg, new Symbol(newVal.id)));
-			} else if (val instanceof Inst) {
-				reg = new VirtualReg();
+		Reg reg = null;
+		if (val instanceof IntConstant newVal) {
+			var valImm = new Imm(newVal.value);
+			reg = new VirtualReg();
+			if (valImm.isLow()) {
+				currentBlock.addInst(new Li(reg, valImm));
+			} else {
+				currentBlock.addInst(new Lui(reg, valImm.high()));
+				currentBlock.addInst(new Arith("add", reg, reg, valImm.low()));
 			}
-			valueMapping.put(val, reg);
+		} else if (val instanceof NullConstant newVal) {
+			reg = Reg.zero;
+		} else if (val instanceof StrConstant newVal) {
+			reg = new VirtualReg();
+			currentBlock.addInst(new La(reg, new Symbol(newVal.id)));
+		} else {//if (val instanceof Inst) {
+			reg = valueMapping.get(val);
+			if (reg == null) {
+				reg = new VirtualReg();
+				valueMapping.put(val, reg);
+			}
 		}
 		return reg;
 	}
@@ -150,21 +171,19 @@ public class ASMBuilder implements Pass {
 		it.insts.forEach(x -> x.accept(this));
 	}
 
-//	public enum OpType {
-//		EQ, NE,
-//		UGT, UGE, ULT, ULE,
-//		SGT, SGE, SLT, SLE,
-//	}
-
 	public void visit(Inst it) {
 		if (it instanceof AllocaInst newIt) {
-
+			var reg = new VirtualReg();
+			valueMapping.put(it, reg);
 		} else if (it instanceof BinaryInst newIt) {
 			// can optimize: add imm
 			var rs1 = getValueReg(newIt.getUse(0));
 			var rs2 = getValueReg(newIt.getUse(1));
 			var rd = getValueReg(newIt);
 			String op = irOptoAsmStr(newIt.opType);
+//			if (op.equals("mul")) {
+//				System.out.println("www");
+//			}
 			currentBlock.addInst(new Arith(op, rd, rs1, rs2));
 		} else if (it instanceof BitcastInst newIt) {
 			currentBlock.addInst(new Mv(getValueReg(newIt), getValueReg(newIt.getUse(0))));
@@ -191,6 +210,12 @@ public class ASMBuilder implements Pass {
 				++cnt;
 			}
 			currentBlock.addInst(new Call(dest));
+			if (!newIt.type.isVoid()) {
+				var ret = new VirtualReg();
+				currentBlock.addInst(new Mv(ret, Reg.a0));
+				valueMapping.put(newIt, ret);
+			}
+			root.callArgStackDelta = max(root.callArgStackDelta, (cnt - 8) * 4);
 		} else if (it instanceof GEPInst newIt) {
 			int cnt = 0;
 			Reg prevReg = null;
@@ -203,8 +228,7 @@ public class ASMBuilder implements Pass {
 					if (prevType instanceof PointerType) {
 						prevType = ((PointerType) prevType).getDereference();
 						var res = new VirtualReg();
-						// except that imm is larger than imm size
-						currentBlock.addInst(new Arith("mul", res, getValueReg(x.val), new Imm(prevType.getSize())));
+						currentBlock.addInst(new Arith("mul", res, getValueReg(x.val), getValueReg(new IntConstant(prevType.getSize()))));
 						currentBlock.addInst(new Arith("add", res, prevReg, res));
 						prevReg = res;
 					} else if (prevType instanceof StructType sT) {
@@ -268,6 +292,9 @@ public class ASMBuilder implements Pass {
 				// load from global symbol
 				var symbol = new Symbol(var.id);
 				currentBlock.addInst(new Lw(rd, symbol));
+			} else if (ptr instanceof AllocaInst newPtr) {
+				var rs1 = getValueReg(ptr);
+				currentBlock.addInst(new Mv(rd, rs1));
 			} else {
 				var rs1 = getValueReg(newIt.getUse(0));
 				currentBlock.addInst(new Lw(rd, rs1, new Imm(0)));
@@ -280,6 +307,9 @@ public class ASMBuilder implements Pass {
 				var symbol = new Symbol(var.id);
 				var reg = new VirtualReg();
 				currentBlock.addInst(new Sw(rs2, reg, symbol));
+			} else if (ptr instanceof AllocaInst newPtr) {
+				var rs1 = getValueReg(newIt.getUse(1));
+				currentBlock.addInst(new Mv(rs1, rs2));
 			} else {
 				var rs1 = getValueReg(newIt.getUse(1)); // ptr
 				currentBlock.addInst(new Sw(rs2, rs1, new Imm(0)));
@@ -298,7 +328,9 @@ public class ASMBuilder implements Pass {
 						break;
 					}
 				}
-				iter.add(new Mv(rd, getValueReg(x.a)));
+				ASMBlock.insertInstIterator = iter;
+				currentBlock.addInst(new Mv(rd, getValueReg(x.a)));
+				ASMBlock.insertInstIterator = null;
 			}
 		} else if (it instanceof RetInst newIt) {
 			if (!newIt.operandList.isEmpty()) {
@@ -346,26 +378,46 @@ public class ASMBuilder implements Pass {
 	}
 
 	private void removeUselessInst() {
-		for (var x : root.funcs) {
+		root.funcs.forEach(x -> {
 			regUseCnt.clear();
-			for (var y : x.blocks) {
-				for (var z : y.insts) {
-					if (z.rs1 != null) addRegUse(z.rs1);
-					if (z.rs2 instanceof Reg reg) addRegUse(reg);
-				}
-			}
-			for (int tmp1 = x.blocks.size() - 1; tmp1 >= 0; --tmp1) {
-				var y = x.blocks.get(tmp1);
-				for (int tmp2 = y.insts.size() - 1; tmp2 >= 0; --tmp2) {
-					var z = y.insts.get(tmp2);
-					if (z.rd != null && (!(z instanceof Sw)) && regNotUse(z.rd)) {
-						y.insts.remove(tmp2);
+			x.blocks.forEach(y -> y.insts.forEach(z -> {
+				if (z.rs1 != null) addRegUse(z.rs1);
+				if (z.rs2 != null) addRegUse(z.rs2);
+			}));
+			for (var iter = x.blocks.descendingIterator(); iter.hasNext();) {
+				var y = iter.next();
+				for (var iter1 = y.insts.descendingIterator(); iter1.hasNext();) {
+					var z = iter1.next();
+					if (z.rd != null && regNotUse(z.rd)) {
+						iter1.remove();
 						if (z.rs1 != null) delRegUse(z.rs1);
-						if (z.rs2 instanceof Reg reg) delRegUse(reg);
+						if (z.rs2 != null) delRegUse(z.rs2);
 					}
 				}
 			}
-		}
+		});
+	}
+
+	private void giveName() {
+		var it = root;
+		it.funcs.forEach(x -> {
+			int regCnt = 0;
+			int blockCnt = 0;
+			for (var y : x.blocks) {
+				y.id = y.id + (blockCnt++);
+				for (var z : y.insts) {
+					if (z.rd instanceof VirtualReg && z.rd.id.equals("tmp")) {
+						z.rd.id = z.rd.id + (regCnt++);
+					}
+					if (z.rs1 instanceof VirtualReg && z.rs1.id.equals("tmp")) {
+						z.rs1.id = z.rs1.id + (regCnt++);
+					}
+					if (z.rs2 instanceof VirtualReg reg && reg.id.equals("tmp")) {
+						reg.id = reg.id + (regCnt++);
+					}
+				}
+			}
+		});
 	}
 
 }

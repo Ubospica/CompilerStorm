@@ -1,12 +1,10 @@
 package IR.Value.Global;
 
 import IR.Pass;
-import IR.Type.StructType;
 import IR.Type.Type;
 import IR.Value.Value;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -15,7 +13,7 @@ import java.util.LinkedList;
  *
  */
 public class Function extends Value {
-	public ArrayList<Variable> argu = new ArrayList<>();
+	public ArrayList<Variable> arg = new ArrayList<>();
 	// blocks.empty: declare function
 	public LinkedList<BasicBlock> blocks = new LinkedList<>();
 
@@ -23,7 +21,6 @@ public class Function extends Value {
 		super(type);
 		this.id = id;
 	}
-
 
 	public void accept(Pass pass) {
 		pass.visit(this);

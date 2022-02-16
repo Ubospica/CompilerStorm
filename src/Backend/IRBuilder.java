@@ -7,7 +7,6 @@ import AST.Expression.Atom.*;
 import AST.Scope.Scope;
 import AST.Statement.*;
 import AST.Statement.ControlFlow.*;
-import IR.Annotation;
 import IR.Type.*;
 import IR.Value.Constant.IntConstant;
 import IR.Value.Constant.NullConstant;
@@ -21,12 +20,9 @@ import IR.Value.Inst.*;
 import IR.Value.Value;
 import org.antlr.v4.runtime.misc.Pair;
 
-import java.sql.Array;
-import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.SortedMap;
 
 import static Builtin.BuiltinLLVM.builtinFunc;
 import static IR.Type.PointerType.I32STAR;
@@ -42,7 +38,9 @@ public class IRBuilder implements ASTVisitor {
 	private static final int ptrSize = 8;
 	private static final String constructorSuffix = "..constructor";
 
-	public Module topModule;
+	Module topModule;
+
+	ProgramNode astRoot;
 
 	Function initFunc;
 
@@ -57,9 +55,15 @@ public class IRBuilder implements ASTVisitor {
 	// prepare for break & continue
 	BasicBlock currentBreakDest = null, currentContDest = null;
 
-	public IRBuilder(String filename) {
+	public IRBuilder(String filename, ProgramNode astRoot) {
+		this.astRoot = astRoot;
 		topModule = new Module(filename);
 		currentScope = new Scope(null);
+	}
+
+	public Module work() {
+		visit(astRoot);
+		return topModule;
 	}
 
 	@Override
@@ -142,6 +146,12 @@ public class IRBuilder implements ASTVisitor {
 		// define var.init function
 		// define internal void @__cxx_global_var_init() section ".text.startup" {}
 
+		// give string name
+		int cnt = 0;
+		for (var x : it.gConstant) {
+			x.id = x.id + (cnt++);
+		}
+
 		// erase useless inst
 		it.gFunc.forEach((k, v) -> {
 			v.blocks.forEach(x -> {
@@ -174,7 +184,7 @@ public class IRBuilder implements ASTVisitor {
 		if (currentStruct != null) {
 			var ptrTy = ty.argType.get(0);
 			var variable = new Variable(ptrTy, "this");
-			func.argu.add(variable);
+			func.arg.add(variable);
 			var allocaInst = addInst(new AllocaInst(ptrTy), "this.ptr");
 			addInst(new StoreInst(variable, allocaInst));
 			currentScope.addEntity("this", allocaInst);
@@ -182,7 +192,7 @@ public class IRBuilder implements ASTVisitor {
 
 		it.paramList.forEach(x -> {
 			var variable = new Variable(x.type.irType, x.id);
-			func.argu.add(variable);
+			func.arg.add(variable);
 			var allocaInst = addInst(new AllocaInst(x.type.irType), x.id + ".ptr");
 			addInst(new StoreInst(variable, allocaInst));
 			currentScope.addEntity(x.id, allocaInst);
@@ -228,7 +238,7 @@ public class IRBuilder implements ASTVisitor {
 		if (currentStruct != null) {
 			var ptrTy = ty.argType.get(0);
 			var variable = new Variable(ptrTy, "this");
-			func.argu.add(variable);
+			func.arg.add(variable);
 			var allocaInst = addInst(new AllocaInst(ptrTy), "this.ptr");
 			addInst(new StoreInst(variable, allocaInst));
 			currentScope.addEntity("this", allocaInst);
@@ -944,6 +954,14 @@ public class IRBuilder implements ASTVisitor {
 	private Inst addInst(Inst inst, String id) {
 		currentBlock.addInst(inst);
 		inst.id = id;
+
+		// maintain blocks
+//		if (inst instanceof BrLabelInst newInst) {
+//			BasicBlock.addLink(currentBlock, (BasicBlock) newInst.getUse(0));
+//		} else if (inst instanceof BrInst newInst) {
+//			BasicBlock.addLink(currentBlock, (BasicBlock) newInst.getUse(0));
+//			BasicBlock.addLink(currentBlock, (BasicBlock) newInst.getUse(1));
+//		}
 		return inst;
 	}
 

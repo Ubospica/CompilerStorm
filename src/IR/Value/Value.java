@@ -13,6 +13,7 @@ abstract public class Value {
 
 	public Type type;
 	public String id = "";
+	public String printId = "";
 	public LinkedList<Use> useList = new LinkedList<>();
 
 	public Value(Type type) {

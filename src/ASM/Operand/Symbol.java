@@ -13,9 +13,11 @@ public class Symbol extends Operand {
 
 	public String hi() {
 		return String.format("%%hi(%s)", id);
+		// return String.format("%%pcrel_hi(%s)", id);
 	}
 
 	public String lo() {
 		return String.format("%%lo(%s)", id);
+		// return String.format("%%pcrel_lo(%s)", id);
 	}
 }

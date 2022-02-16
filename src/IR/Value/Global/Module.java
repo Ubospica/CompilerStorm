@@ -1,9 +1,9 @@
 package IR.Value.Global;
 
-import AST.Type.ClassType;
 import IR.Pass;
-import IR.Type.*;
-import IR.Value.Constant.Constant;
+import IR.Type.StructType;
+import IR.Type.Type;
+import IR.Value.Constant.StrConstant;
 import IR.Value.Value;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class Module extends Value {
 	public HashMap<String, Function> gFunc = new HashMap<>();
 	public HashMap<String, Variable> gVar = new HashMap<>();
 	public HashMap<String, StructType> gStruct = new HashMap<>();
-	public ArrayList<Constant> gConstant = new ArrayList<>();
+	public ArrayList<StrConstant> gConstant = new ArrayList<>();
 
 //	public BasicBlock initBlock = new BasicBlock("func.entry");
 

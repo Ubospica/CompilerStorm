@@ -11,17 +11,18 @@ test_cases_dir = '../doc/Compiler-Design-Implementation/testcases/codegen/'
 # test_cases_dir = '../testcases/codegen/'
 # test_cases_dir = '../testcases/optim/'
 compile_cmd = "bash ../build.bash"
-execute_cmd = "bash ../semantic.bash"
+execute_cmd = "bash ../codegen.bash"
+# execute_cmd = "bash ../semantic.bash"
 excluded_test_cases = ["foo.mx"]
 ravel_path = "ravel --enable-cache"
 # builtin_path = "./builtin/builtin.s"
-builtin_path = "./src/Builtin/BuiltinFuncC.ll"
-halt_on_3_fails = False
+builtin_path = "../src/Builtin/BuiltinFuncC.s"
+halt_on_3_fails = True
 calculate_score = False
 test_codegen = True
 # When test_codegen && use_llvm is true, the output should be a .ll file, and we will use llc to
 # compile it into asm. You can test the correctness of your IR-gen with this.
-use_llvm = True
+use_llvm = False
 llc_cmd = 'llc-10'
 
 
@@ -94,6 +95,7 @@ def main():
             print(color_red + "Compilation failed" + color_none)
             continue_fail += 1
             continue
+
         print("(T=%.2fs)" % (time.time() - start), end=" ")
         if test_codegen:
             if use_llvm:
