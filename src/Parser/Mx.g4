@@ -87,7 +87,8 @@ returnType : type | Void;
 
 literal : IntegerLiteral | StringLiteral | BooleanLiteral | NullLiteral;
 
-lambda : '[' '&' ']' '(' paramList ')' '->' block;
+captureList : '&'?;
+lambda : '[' captureList ']' '(' paramList ')' '->' block;
 
 
 // literal constants

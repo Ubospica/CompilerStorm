@@ -1,4 +1,4 @@
-// Generated from //wsl$/Ubuntu/home/ubospica/courses/compiler/CompilerStorm/src/Parser\Mx.g4 by ANTLR 4.9.2
+// Generated from //wsl$/Ubuntu/home/ubospica/courses/compiler/CompilerStorm/src/Parser\Mx.g4 by ANTLR 4.10.1
 package Parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -497,6 +497,16 @@ public interface MxListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitLiteral(MxParser.LiteralContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MxParser#captureList}.
+	 * @param ctx the parse tree
+	 */
+	void enterCaptureList(MxParser.CaptureListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MxParser#captureList}.
+	 * @param ctx the parse tree
+	 */
+	void exitCaptureList(MxParser.CaptureListContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MxParser#lambda}.
 	 * @param ctx the parse tree

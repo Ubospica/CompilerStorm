@@ -10,10 +10,12 @@ import java.util.ArrayList;
 public class LambdaExprNode extends ExprNode {
 	public ArrayList<VarDefSubStmtNode> paramList;
 	public BlockStmtNode body;
+	public boolean isCapture;
 
-	public LambdaExprNode(ArrayList<VarDefSubStmtNode> param, BlockStmtNode body, Position pos) {
+	public LambdaExprNode(ArrayList<VarDefSubStmtNode> param, boolean isCapture, BlockStmtNode body, Position pos) {
 		super(pos);
 		this.paramList = param;
+		this.isCapture = isCapture;
 		this.body = body;
 	}
 

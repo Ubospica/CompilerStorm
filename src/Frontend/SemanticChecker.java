@@ -34,6 +34,7 @@ public class SemanticChecker implements ASTVisitor {
 	private boolean returned;
 
 	private boolean inLoop = false;
+	private boolean ignoreOuterScope = false;
 
 	public SemanticChecker(Scope globalScope) {
 		this.globalScope = globalScope;
@@ -190,7 +191,7 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(BlockStmtNode it) {
 		Scope pastScope = curScope;
-		var blockScope = new Scope(curScope);
+		var blockScope = new Scope(ignoreOuterScope ? curScope : null);
 		curScope = blockScope;
 
 		if (blockVar != null) {
@@ -453,14 +454,18 @@ public class SemanticChecker implements ASTVisitor {
 		blockVar = it.paramList;
 		returnTypes.push(new Type(TypeEnum.LAMBDA_RETURN));
 
-		boolean pastInLoop = inLoop;
-		inLoop = false;
-
 		boolean pastReturned = returned;
 		returned = false;
 
+		boolean pastInLoop = inLoop;
+		inLoop = false;
+
+		boolean pastIgnoreOuterScpoe = ignoreOuterScope;
+		ignoreOuterScope = !it.isCapture;
+
 		it.body.accept(this);
 
+		ignoreOuterScope = pastIgnoreOuterScpoe;
 		inLoop = pastInLoop;
 
 		if (returnTypes.peek().type == TypeEnum.LAMBDA_RETURN) {

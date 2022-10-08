@@ -487,7 +487,7 @@ public class IRBuilder implements ASTVisitor {
 	@Override
 	public void visit(NullExprNode it) {
 		// type of null constant is to be determined
-		it.irValue = new NullConstant(null);
+		it.irValue = new NullConstant();
 	}
 
 	// todo: irPointer maintain
@@ -713,6 +713,9 @@ public class IRBuilder implements ASTVisitor {
 		filter.removeIf(Objects::isNull);
 		out: for (var x : filter) {
 			for (int i = 0; i < paramList.size(); ++i) {
+				var p = ((FuncType)x.type).argType.get(i);
+				var q = paramList.get(i).type;
+				var r = p.equals(q);
 				if (!((FuncType)x.type).argType.get(i).equals(paramList.get(i).type)) {
 					continue out;
 				}

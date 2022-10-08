@@ -1,4 +1,4 @@
-// Generated from //wsl$/Ubuntu/home/ubospica/courses/compiler/CompilerStorm/src/Parser\Mx.g4 by ANTLR 4.9.2
+// Generated from //wsl$/Ubuntu/home/ubospica/courses/compiler/CompilerStorm/src/Parser\Mx.g4 by ANTLR 4.10.1
 package Parser;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -299,6 +299,12 @@ public interface MxVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitLiteral(MxParser.LiteralContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MxParser#captureList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCaptureList(MxParser.CaptureListContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link MxParser#lambda}.
 	 * @param ctx the parse tree

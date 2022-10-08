@@ -1,12 +1,7 @@
-package CompilerMain;
-
 import AST.Definition.ProgramNode;
 import AST.Scope.Scope;
 import AST.Type.Type;
-import Backend.ASMBuilder;
-import Backend.ASMPrinter;
-import Backend.IRBuilder;
-import Backend.RegAllocator;
+import Backend.*;
 import Builtin.BuiltinFunc;
 import Frontend.ASTBuilder;
 import Frontend.SemanticChecker;
@@ -18,37 +13,44 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static java.lang.Math.max;
 
 
-public class Main {
+public class Compiler {
 	public static void main(String[] args) throws Exception{
-//		String inputName = "a.mx";
-//		InputStream input = new FileInputStream(inputName);
-//		PrintStream output = new PrintStream("a.ll");
-//		PrintStream outputAsm = new PrintStream("a.s");
-//		PrintStream outputAsmAlloc = new PrintStream("a.alloc.s");
+		InputStream input;
+		PrintStream output, outputIR, outputAsm;
 
-		// stdin & stdout
-		InputStream input = System.in;
-		PrintStream output = System.out;
+		var argsList = Arrays.asList(args);
+
+		if (argsList.contains("-debug")) {
+			String inputName = "a.mx";
+			input = new FileInputStream(inputName);
+			outputIR = new PrintStream("a.ll");
+			outputAsm = new PrintStream("a.s");
+			output = new PrintStream("output.s");
+		} else {
+			input = System.in;
+			output = new PrintStream("output.s");
+			outputIR = outputAsm = System.err;
+		}
 
 		// parse; semantic; codegen; optimize
 		int stage = 0;
-		boolean chk = false;
-		for (var i : args) {
-			if (i.equals("-semantic")) {
-				stage = max(stage, 2);
-				chk = true;
-			} else if (i.equals("-codegen")) {
-				stage = max(stage, 3);
-				chk = true;
-			}
-		}
-		if (!chk) {
+
+		if (argsList.contains("-parse")) {
+			stage = 1;
+		} if (argsList.contains("-semantic")) {
+			stage = 2;
+		} else if (argsList.contains("-codegen")) {
+			stage = 3;
+		} else {
 			stage = 4;
 		}
 
@@ -65,7 +67,7 @@ public class Main {
 			parser.addErrorListener(new MxErrorListener());
 			ParseTree parseTreeRoot = parser.program();
 
-			if (stage <= 1) return;
+			if (stage == 1) return;
 
 			// AST Building
 			var astBuilder = new ASTBuilder();
@@ -75,26 +77,25 @@ public class Main {
 			new SymbolCollector(globalScope).visit(astRoot);
 			new SemanticChecker(globalScope).visit(astRoot);
 
-			if (stage <= 2) return;
+			if (stage == 2) return;
 
 			// IR Building and Printing
 			var irBuilder = new IRBuilder("a.mx", astRoot);
 			var topModule = irBuilder.work();
-//			new IRPrinter(output).visit(topModule);
+			new IRPrinter(outputIR).visit(topModule);
 
 
 			// Inst selection
 			var builder = new ASMBuilder(topModule);
 			var asmRoot = builder.work();
 			// printing unallocated ASM
-//			new ASMPrinter(outputAsm).visit(asmRoot);
+			new ASMPrinter(outputAsm).visit(asmRoot);
 			// reg alloc
 			new RegAllocator(asmRoot).work();
 			// printing ASM
-//			new ASMPrinter(outputAsmAlloc).visit(asmRoot);
 			new ASMPrinter(output).visit(asmRoot);
 
-			if (stage <= 3) return;
+			if (stage == 3) return;
 		} catch (Error er) {
 			System.err.println(er);
 			throw new RuntimeException();

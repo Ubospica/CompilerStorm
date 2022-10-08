@@ -331,8 +331,9 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 				param.add((VarDefSubStmtNode) visit(i));
 			}
 		}
+		var isCapture = ctx.captureList().getChildCount() != 0;
 		var body = (BlockStmtNode)visit(ctx.block());
-		return new LambdaExprNode(param, body, new Position(ctx));
+		return new LambdaExprNode(param, isCapture, body, new Position(ctx));
 	}
 
 	@Override

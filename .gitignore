@@ -6,3 +6,7 @@ bin
 test.mx
 tmp/
 run/
+a.mx
+a.ll
+a.s
+output.s
