@@ -37,7 +37,7 @@ public class Compiler {
 			output = new PrintStream("output.s");
 		} else {
 			input = System.in;
-			output = new PrintStream("output.s");
+//			output = new PrintStream("output.s");
 			outputIR = outputAsm = System.err;
 		}
 
@@ -51,7 +51,7 @@ public class Compiler {
 		} else if (argsList.contains("-codegen")) {
 			stage = 3;
 		} else {
-			stage = 4;
+			stage = 2;
 		}
 
 		try {
@@ -82,18 +82,18 @@ public class Compiler {
 			// IR Building and Printing
 			var irBuilder = new IRBuilder("a.mx", astRoot);
 			var topModule = irBuilder.work();
-			new IRPrinter(outputIR).visit(topModule);
+//			new IRPrinter(outputIR).visit(topModule);
 
 
 			// Inst selection
 			var builder = new ASMBuilder(topModule);
 			var asmRoot = builder.work();
 			// printing unallocated ASM
-			new ASMPrinter(outputAsm).visit(asmRoot);
+//			new ASMPrinter(outputAsm).visit(asmRoot);
 			// reg alloc
 			new RegAllocator(asmRoot).work();
 			// printing ASM
-			new ASMPrinter(output).visit(asmRoot);
+//			new ASMPrinter(output).visit(asmRoot);
 
 			if (stage == 3) return;
 		} catch (Error er) {

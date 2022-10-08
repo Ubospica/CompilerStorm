@@ -191,7 +191,7 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(BlockStmtNode it) {
 		Scope pastScope = curScope;
-		var blockScope = new Scope(ignoreOuterScope ? curScope : null);
+		var blockScope = new Scope(ignoreOuterScope ? null : curScope);
 		curScope = blockScope;
 
 		if (blockVar != null) {
