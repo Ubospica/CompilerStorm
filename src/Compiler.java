@@ -37,7 +37,7 @@ public class Compiler {
 			output = new PrintStream("output.s");
 		} else {
 			input = System.in;
-//			output = new PrintStream("output.s");
+			output = new PrintStream("output.s");
 			outputIR = outputAsm = System.err;
 		}
 
@@ -51,7 +51,7 @@ public class Compiler {
 		} else if (argsList.contains("-codegen")) {
 			stage = 3;
 		} else {
-			stage = 2;
+			stage = 3;
 		}
 
 		try {
@@ -93,7 +93,7 @@ public class Compiler {
 			// reg alloc
 			new RegAllocator(asmRoot).work();
 			// printing ASM
-//			new ASMPrinter(output).visit(asmRoot);
+			new ASMPrinter(output).visit(asmRoot);
 
 			if (stage == 3) return;
 		} catch (Error er) {
