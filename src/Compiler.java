@@ -9,6 +9,7 @@ import Frontend.SymbolCollector;
 import Parser.MxLexer;
 import Parser.MxParser;
 import Util.Error.MxErrorListener;
+import Util.BuiltinFunctionASMPrinter;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -94,6 +95,10 @@ public class Compiler {
 			new RegAllocator(asmRoot).work();
 			// printing ASM
 			new ASMPrinter(output).visit(asmRoot);
+
+			// output builtin
+			new BuiltinFunctionASMPrinter("builtin.s");
+
 
 			if (stage == 3) return;
 		} catch (Error er) {
