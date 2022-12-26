@@ -210,16 +210,18 @@ public class IRBuilder implements ASTVisitor {
 			});
 		}
 
-		currentFunction = null;
 		currentScope = currentScope.parentScope;
+		currentFunction = null;
 	}
 
 	// todo: function finding
 	@Override
 	public void visit(ClassDefNode it) {
 		currentStruct = topModule.gStruct.get(it.id);
+		currentScope = new Scope(currentScope, true);
 		it.constructor.forEach(x -> x.accept(this));
 		it.method.forEach(x -> x.accept(this));
+		currentScope = currentScope.parentScope;
 		currentStruct = null;
 	}
 
@@ -248,8 +250,8 @@ public class IRBuilder implements ASTVisitor {
 		it.body.body.forEach(x -> x.accept(this));
 
 		// function returns if there is no explicit return instruction
-		var lastInst = currentBlock.insts.get(currentBlock.insts.size() - 1);
-		if (!(lastInst instanceof RetInst)) {
+		if (currentBlock.insts.size() == 0 ||
+			!(currentBlock.insts.get(currentBlock.insts.size() - 1) instanceof RetInst)) {
 			addInst(new RetInst());
 		}
 
@@ -755,12 +757,13 @@ public class IRBuilder implements ASTVisitor {
 			// get best match
 			var node = (VarExprNode)it.func;
 			// we need a function overload and find match
-			// ugly but i am tired to revise it
+			// ugly, but I am tired to revise it
 			Type tmp = null;
 			if (node.classFunc != null) {
 				tmp = ((FuncType)node.classFunc.type).argType.remove(0);
 			}
-			var func = getBestMatch(irParamList, (Function) node.irValue, node.classFunc);
+			// order: class func first, global func last
+			var func = getBestMatch(irParamList, node.classFunc, (Function) node.irValue);
 
 			if (node.classFunc != null) {
 				((FuncType)node.classFunc.type).argType.add(0, tmp);
@@ -909,21 +912,20 @@ public class IRBuilder implements ASTVisitor {
 			}
 			it.irValue = topModule.gFunc.get(it.id);
 		} else {
-			boolean ok = false;
-			if (currentStruct != null) {
-				var idx = currentStruct.fieldIdx.get(it.id);
-				if (idx != null) {
-					ok = true;
-					var thisLoadInst = addInst(
-							new LoadInst(currentScope.getEntity("this", true)), "this.self");
-					var gepInst = addInst(new GEPInst(thisLoadInst, IntConstant.ZERO, new IntConstant(idx)));
-					var loadInst = addInst(new LoadInst(gepInst), "this." + it.id + ".value");
-					it.irValue = loadInst;
-					it.irPointer = gepInst;
-				}
-			}
-			if (!ok) {
-				var pointer = currentScope.getEntity(it.id, true);
+			// 2022/12/3: fix a error
+			// first check in Scope
+			var result = currentScope.getEntityInClass(it.id, true);
+			// then check in Class
+			var idx = currentStruct != null ? currentStruct.fieldIdx.get(it.id) : null;
+			if (idx != null && (result.a == null || result.b)) {
+				var thisLoadInst = addInst(
+						new LoadInst(currentScope.getEntity("this", true)), "this.self");
+				var gepInst = addInst(new GEPInst(thisLoadInst, IntConstant.ZERO, new IntConstant(idx)));
+				var loadInst = addInst(new LoadInst(gepInst), "this." + it.id + ".value");
+				it.irValue = loadInst;
+				it.irPointer = gepInst;
+			} else {
+				var pointer = result.a;
 				var loadInst = addInst(new LoadInst(pointer), it.id + ".value");
 				it.irValue = loadInst;
 				it.irPointer = pointer;

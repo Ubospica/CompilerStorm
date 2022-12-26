@@ -37,25 +37,28 @@ public class RegAllocator {
 			currentFunc = x;
 			stackDelta = 0;
 			startAlloc();
+			System.out.println(x.id + " finished");
 //		});
 		}
 	}
 
 	int K = 0;
-	HashSet<Reg> initial = new HashSet<>(), simplifyWorklist = new HashSet<>(),
-		freezeWorklist = new HashSet<>(), spillWorklist = new HashSet<>(), spilledNodes = new HashSet<>(),
-		coalescedNodes = new HashSet<>(), coloredNodes = new HashSet<>();
+	// here linked hashset is much faster (!) than hashset
+	// maybe the reason is that we spend much time iterating
+	LinkedHashSet<Reg> initial = new LinkedHashSet<>(), simplifyWorklist = new LinkedHashSet<>(),
+		freezeWorklist = new LinkedHashSet<>(), spillWorklist = new LinkedHashSet<>(), spilledNodes = new LinkedHashSet<>(),
+		coalescedNodes = new LinkedHashSet<>(), coloredNodes = new LinkedHashSet<>();
 	LinkedList<Reg> selectStack = new LinkedList<>();
 
-	HashSet<Mv> coalescedMoves = new HashSet<>(), constrainedMoves = new HashSet<>(), frozenMoves = new HashSet<>(),
-		worklistMoves = new HashSet<>(), activeMoves = new HashSet<>();
+	LinkedHashSet<Mv> coalescedMoves = new LinkedHashSet<>(), constrainedMoves = new LinkedHashSet<>(), frozenMoves = new LinkedHashSet<>(),
+		worklistMoves = new LinkedHashSet<>(), activeMoves = new LinkedHashSet<>();
 
 	// vir-vir, vir-phy
-	HashMap<Reg, HashSet<Reg>> adjList = new HashMap<>();
+	HashMap<Reg, LinkedHashSet<Reg>> adjList = new HashMap<>();
 	// phy-vir, vir-phy, vir-vir
-	HashSet<Pair<Reg, Reg>> adjSet = new HashSet<>();
+	LinkedHashSet<Pair<Reg, Reg>> adjSet = new LinkedHashSet<>();
 	HashMap<Reg, AtomicInteger> degree = new HashMap<>();
-	HashMap<Reg, HashSet<Mv>> moveList = new HashMap<>();
+	HashMap<Reg, LinkedHashSet<Mv>> moveList = new HashMap<>();
 	HashMap<Reg, Reg> alias = new HashMap<>();
 //	HashMap<Reg, PhyReg> color = new HashMap<>();
 
@@ -135,15 +138,15 @@ public class RegAllocator {
 					}
 					r.color = null;
 					initial.add(r);
-					adjList.put(r, new HashSet<>());
+					adjList.put(r, new LinkedHashSet<>());
 					degree.put(r, new AtomicInteger());
-					moveList.put(r, new HashSet<>());
+					moveList.put(r, new LinkedHashSet<>());
 				});
 			});
 		});
 		Reg.regList.forEach(r -> {
 			degree.put(r, new AtomicInteger(100000000));
-			moveList.put(r, new HashSet<>());
+			moveList.put(r, new LinkedHashSet<>());
 		});
 	}
 
@@ -190,8 +193,8 @@ public class RegAllocator {
 		});
 	}
 
-	HashMap<ASMBlock, HashSet<Reg>> blkDef = new HashMap<>(), blkUse = new HashMap<>();
-	HashMap<ASMBlock, HashSet<Reg>> blkLiveIn = new HashMap<>(), blkLiveOut = new HashMap<>();
+	HashMap<ASMBlock, LinkedHashSet<Reg>> blkDef = new HashMap<>(), blkUse = new HashMap<>();
+	HashMap<ASMBlock, LinkedHashSet<Reg>> blkLiveIn = new HashMap<>(), blkLiveOut = new HashMap<>();
 	void livenessAnalysis() {
 		blkDef.clear();
 		blkUse.clear();
@@ -199,9 +202,9 @@ public class RegAllocator {
 		blkLiveOut.clear();
 
 		var queue = new LinkedList<ASMBlock>();
-		var visit = new HashSet<ASMBlock>();
+		var visit = new LinkedHashSet<ASMBlock>();
 		currentFunc.blocks.forEach(x -> {
-			HashSet<Reg> use = new HashSet<>(), def = new HashSet<>();
+			LinkedHashSet<Reg> use = new LinkedHashSet<>(), def = new LinkedHashSet<>();
 			x.insts.forEach(y -> {
 				var instUse = y.getUseList();
 				instUse.removeAll(def);
@@ -210,8 +213,8 @@ public class RegAllocator {
 			});
 			blkUse.put(x, use);
 			blkDef.put(x, def);
-			blkLiveIn.put(x, new HashSet<>());
-			blkLiveOut.put(x, new HashSet<>());
+			blkLiveIn.put(x, new LinkedHashSet<>());
+			blkLiveOut.put(x, new LinkedHashSet<>());
 
 			if (x.nxt.isEmpty()) {
 				queue.push(x);
@@ -225,12 +228,12 @@ public class RegAllocator {
 			visit.remove(x);
 
 			// update using the data flow equation
-			var liveOut = new HashSet<Reg>();
+			var liveOut = new LinkedHashSet<Reg>();
 
 			x.nxt.forEach(y -> liveOut.addAll(blkLiveIn.get(y)));
 			blkLiveOut.replace(x, liveOut);
 
-			var liveIn = new HashSet<>(liveOut);
+			var liveIn = new LinkedHashSet<>(liveOut);
 			liveIn.removeAll(blkDef.get(x));
 			liveIn.addAll(blkUse.get(x));
 
@@ -250,7 +253,7 @@ public class RegAllocator {
 	// maintain movelist & worklistmoves
 	void build() {
 		currentFunc.blocks.forEach(b -> {
-			var live = new HashSet<>(blkLiveOut.get(b));
+			var live = new LinkedHashSet<>(blkLiveOut.get(b));
 			var iter = b.insts.descendingIterator();
 			while(iter.hasNext()) {
 				var inst = iter.next();
@@ -287,17 +290,27 @@ public class RegAllocator {
 		}
 	}
 
-	HashSet<Reg> adjacent(Reg reg) {
-		var res = new HashSet<>(adjList.get(reg));
+	// here performance is critical
+	LinkedHashSet<Reg> adjacent(Reg reg) {
+		var res = new LinkedHashSet<>(adjList.get(reg));
 		selectStack.forEach(res::remove);
-		coalescedNodes.forEach(res::remove);
+		res.removeAll(coalescedNodes);
+		// coalescedNodes.forEach(res::remove);
 		return res;
 	}
 
-	HashSet<Mv> nodeMoves(Reg reg) {
-		var res = new HashSet<>(activeMoves);
-		res.addAll(worklistMoves);
-		res.retainAll(moveList.get(reg));
+	// and here
+	LinkedHashSet<Mv> nodeMoves(Reg reg) {
+		var move = moveList.get(reg);
+		var res = new LinkedHashSet<Mv>();
+		for (var x : move) {
+			if (activeMoves.contains(x) || worklistMoves.contains(x)) {
+				res.add(x);
+			}
+		}
+		// var res = new LinkedHashSet<>(activeMoves);
+		// res.addAll(worklistMoves);
+		// res.retainAll(moveList.get(reg));
 		return res;
 	}
 
@@ -327,7 +340,7 @@ public class RegAllocator {
 		}
 	}
 
-	void enableMoves(HashSet<Reg> nodes) {
+	void enableMoves(LinkedHashSet<Reg> nodes) {
 		nodes.forEach(x -> nodeMoves(x).forEach(y -> {
 			if (activeMoves.contains(y)) {
 				activeMoves.remove(y);
@@ -397,7 +410,7 @@ public class RegAllocator {
 
 	// briggs
 	//
-	boolean conservative(HashSet<Reg> nodes) {
+	boolean conservative(LinkedHashSet<Reg> nodes) {
 		AtomicInteger k = new AtomicInteger();
 		nodes.forEach(x -> {
 			if (degree.get(x).get() >= K) k.incrementAndGet();
@@ -422,7 +435,7 @@ public class RegAllocator {
 		coalescedNodes.add(v);
 		alias.put(v, u);
 		moveList.get(u).addAll(moveList.get(v));
-		enableMoves(new HashSet<>(List.of(v)));
+		enableMoves(new LinkedHashSet<>(List.of(v)));
 		adjacent(v).forEach(t -> {
 			addEdge(t, u);
 			decrementDegree(t);

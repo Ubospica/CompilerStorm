@@ -1,0 +1,7 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "antlr-4.10.1-complete.jar"
+    ],
+    "java.dependency.packagePresentation": "hierarchical"
+}

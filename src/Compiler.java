@@ -20,8 +20,6 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static java.lang.Math.max;
-
 
 public class Compiler {
 	public static void main(String[] args) throws Exception{
@@ -31,6 +29,7 @@ public class Compiler {
 		var argsList = Arrays.asList(args);
 
 		if (argsList.contains("-debug")) {
+			System.out.println("debug mode");
 			String inputName = "a.mx";
 			input = new FileInputStream(inputName);
 			outputIR = new PrintStream("a.ll");
@@ -85,7 +84,6 @@ public class Compiler {
 			var topModule = irBuilder.work();
 //			new IRPrinter(outputIR).visit(topModule);
 
-
 			// Inst selection
 			var builder = new ASMBuilder(topModule);
 			var asmRoot = builder.work();
@@ -98,7 +96,6 @@ public class Compiler {
 
 			// output builtin
 			new BuiltinFunctionASMPrinter("builtin.s");
-
 
 			if (stage == 3) return;
 		} catch (Error er) {

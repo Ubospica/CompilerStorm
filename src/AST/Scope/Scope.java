@@ -1,16 +1,18 @@
 package AST.Scope;
 
+import java.util.HashMap;
+
+import org.antlr.v4.runtime.misc.Pair;
+
 import AST.Type.ArrayType;
 import AST.Type.ClassType;
 import AST.Type.FuncType;
 import AST.Type.Type;
 import AST.Type.TypeEnum;
 import IR.Value.Value;
+import Util.Position;
 import Util.Error.InternalError;
 import Util.Error.SemanticError;
-import Util.Position;
-
-import java.util.HashMap;
 
 public class Scope {
 	public HashMap<String, Type> var = new HashMap<>();
@@ -20,8 +22,15 @@ public class Scope {
 	public HashMap<String, Value> entities = new HashMap<>();
 	public Scope parentScope;
 
+	public boolean isClassScope = false;
+
 	public Scope(Scope parentScope) {
 		this.parentScope = parentScope;
+	}
+
+	public Scope(Scope parentScope, boolean isClassScope) {
+		this.parentScope = parentScope;
+		this.isClassScope = isClassScope;
 	}
 
 	public Scope(Scope parentScope, HashMap<String, FuncType> builtinFunc) {
@@ -62,6 +71,20 @@ public class Scope {
 		}
 		else {
 			return null;
+		}
+	}
+
+	// a solution to fix a bug: see IRBuilder.java:915
+	public Pair<Value, Boolean> getEntityInClass(String name, boolean lookUpon) {
+		if (entities.containsKey(name)) {
+			return new Pair<>(entities.get(name), isClassScope);
+		}
+		else if (lookUpon && parentScope != null) {
+			var result = parentScope.getEntityInClass(name, lookUpon);
+			return new Pair<>(result.a, result.b | isClassScope);
+		}
+		else {
+			return new Pair<>(null, false);
 		}
 	}
 

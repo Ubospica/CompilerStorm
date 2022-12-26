@@ -4,6 +4,19 @@
 
 The grammar of Mx* can be found in `doc/README.md`.
 
+### Run Guide
+- Flame Graph
+    - <https://blog.codecentric.de/jvm-fire-using-flame-graphs-analyse-performance>
+
+```sh
+# run with agent
+java-agentpath:/home/ubospica/dev/java/honest-profiler/liblagent.so=interval=7,logPath=/tmp/tmp/log.hpl -cp xxx
+# convert hpl to folded
+# install openjfx first
+java --module-path /usr/share/openjfx/lib --add-modules=javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web -cp ~/dev/java/honest-profiler/honest-profiler.jar com.insightfullogic.honest_profiler.ports.console.FlameGraphDumperApplication log.hpl log.folded
+# convert folded to svg
+~/dev/linux/FlameGraph/flamegraph.pl /tmp/tmp/log.folded > /tmp/tmp/flamegraph-java.svg
+```
 
 
 ### Development Progress
@@ -21,7 +34,7 @@ The project starts from `10/10/2021`. Recent updates about the project are shown
 1. Use ArrayList instead of Vector: faster, not thread safe
 2. equals实现: 见`IR.Type.Type.equals` & `IR.Type.Type.IntType.equals`
 3. 调用本类构造函数: `this(xxx);`
-4. switch: 
+4. switch:
     ```
     var irTypeBase = switch (it.type) {
         case VOID -> Type.VOID;
@@ -43,10 +56,19 @@ The project starts from `10/10/2021`. Recent updates about the project are shown
     }
     ```
 
+5. java flamegraph
+    ```
+    # in launch.json
+    "vmArgs": "-agentpath:/home/ubospica/dev/java/honest-profiler/liblagent.so=interval=7,logPath=/tmp/tmp/log.hpl"
+    # in bash
+    java --module-path /usr/share/openjfx/lib --add-modules=javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web -cp ~/dev/java/honest-profiler/honest-profiler.jar com.insightfullogic.honest_profiler.ports.console.FlameGraphDumperApplication log.hpl log.folded
+    ~/dev/linux/FlameGraph/flamegraph.pl /tmp/tmp/log.folded > /tmp/tmp/flamegraph-java.svg
+    ```
+
 ### Q&A
 
 ### TODO List
-1. codegen 
+1. codegen
    - [x] 18
    - [x] 61
    - [x] 63
