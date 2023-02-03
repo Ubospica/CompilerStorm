@@ -28,7 +28,7 @@ statement
         (Else falseStmt=statement)?                            # ifStmt
     | While '(' expression ')' statement                       # whileStmt
 //    | For '(' (expression | varDef)? ';'
-    | For '(' init=expression? ';'
+    | For '(' (initDef=varDef | init=expression)? ';'
         cond=expression? ';' incr=expression? ')' statement    # forStmt
     | (Break | Continue) ';'                                   # controlStmt
     | Return expression? ';'                                   # returnStmt
@@ -140,4 +140,3 @@ NewLine : '\r'?'\n' -> skip;
 
 BlockComment : '/*'.*?'*/' -> skip;
 LineComment : '//'~[\r\n]* -> skip;
-

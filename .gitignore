@@ -3,10 +3,6 @@
 out
 bin
 *.tmp
-test.mx
-tmp/
-run/
-a.mx
-a.ll
-a.s
+/test.*
+/a.*
 output.s

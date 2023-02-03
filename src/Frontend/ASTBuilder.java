@@ -212,6 +212,10 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitForStmt(MxParser.ForStmtContext ctx) {
 		ExprNode init = null, cond = null, incr = null;
+		ArrayList<VarDefSubStmtNode> initDef = null;
+		if (ctx.initDef != null) {
+			initDef = ((VarDefStmtNode) visit(ctx.initDef)).varList;
+		}
 		if (ctx.init != null) {
 			init = (ExprNode) visit(ctx.init);
 		}
@@ -225,7 +229,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 		if (!(thenStmt instanceof BlockStmtNode)) {
 			thenStmt = new BlockStmtNode(new ArrayList<>(Arrays.asList(thenStmt)), thenStmt.pos);
 		}
-		return new ForStmtNode(init, cond, incr, thenStmt, new Position(ctx));
+		return new ForStmtNode(init, initDef, cond, incr, thenStmt, new Position(ctx));
 	}
 
 	@Override

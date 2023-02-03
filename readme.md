@@ -4,7 +4,17 @@
 
 The grammar of Mx* can be found in `doc/README.md`.
 
-### Run Guide
+### Bash Reference
+- Generate parser
+```
+java -Xmx500M -cp "./antlr-4.10.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool  src/Parser/Mx.g4 -o . -listener -visitor -package Parser
+```
+- Generate llvm ir
+```
+clang -S -emit-llvm -Xclang -disable-O0-optnone a.cpp -o a.llvm.ll
+opt -mem2reg a.llvm.ll -o a.llvm.bc // ir to ssa
+llvm-dis a.llvm.bc -o a.llvm.opt.ll // disassemble ir
+```
 - Flame Graph
     - <https://blog.codecentric.de/jvm-fire-using-flame-graphs-analyse-performance>
 
@@ -17,7 +27,47 @@ java --module-path /usr/share/openjfx/lib --add-modules=javafx.base,javafx.contr
 # convert folded to svg
 ~/dev/linux/FlameGraph/flamegraph.pl /tmp/tmp/log.folded > /tmp/tmp/flamegraph-java.svg
 ```
+- Others
+```
+# cpp to ll
+clang -emit-llvm -S a.cpp -fno-discard-value-names -O0
+# ll to assembly
+clang a.ll -Wall -Wextra -S
+# ll to a.out
+clang a.ll -Wall -Wextra
+# run and print output
+./a.out; echo $?
+clang a.ll -Wall -Wextra; ./a.out; echo $?
 
+# Codegen
+
+# cpp to riscv llvm ir to riscv assembly
+clang -emit-llvm -S a.cpp -o a.llvm.ll --target=riscv32 -O0
+llc a.llvm.ll -o a.s -march=riscv32 --mattr=+m -O0
+
+# compile & run llvm ir
+clang a.ll ../src/Builtin/BuiltinFuncC.ll -Wall -Wextra && ./a.out
+
+# cpp to riscv assembly
+clang -S a.cpp -o a.s --target=riscv32 -O0
+
+# ravel debug
+ravel a.alloc.s ../src/Builtin/BuiltinFuncC.s --print-instructions
+ravel a.alloc.s ../src/Builtin/BuiltinFuncC.s --input-file=test.in --output-file=test.out
+ravel a.alloc.s ../src/Builtin/BuiltinFuncC.s --input-file=test.in --output-file=test.out --print-instructions 2> tmp
+
+
+# compile and run java
+javac ../src/**/*.java -d ../bin -cp ../lib/antlr-4.9.2-complete.jar  -Xlint:unchecked
+java -cp ../lib/antlr-4.9.2-complete.jar:../bin/ CompilerMain.Main
+
+# builtin c to s
+clang -emit-llvm -S BuiltinFuncC.c -o BuiltinFuncC.ll
+# target triple = "riscv32"
+# llc BuiltinFuncC.ll -o BuiltinFuncC.s -march=riscv32 --mattr=+m -O0
+clang -S BuiltinFuncC.ll -o BuiltinFuncC2.s --target=riscv32 -march=rv32ima -O2
+
+```
 
 ### Development Progress
 The project starts from `10/10/2021`. Recent updates about the project are shown below.

@@ -17,7 +17,7 @@
             "mainClass": "Compiler",
             "projectName": "CompilerStorm_bec7ecd7",
             "args": "-debug",
-            "vmArgs": "-agentpath:/home/ubospica/dev/java/honest-profiler/liblagent.so=interval=7,logPath=/tmp/tmp/log.hpl"
+            // "vmArgs": "-agentpath:/home/ubospica/dev/java/honest-profiler/liblagent.so=interval=7,logPath=/tmp/tmp/log.hpl"
         }
     ]
 }

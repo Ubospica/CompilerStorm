@@ -245,6 +245,16 @@ public class SemanticChecker implements ASTVisitor {
 		if (it.init != null) {
 			it.init.accept(this);
 		}
+
+		Scope pastScope = curScope;
+		if (it.initDef != null) {
+			var blockScope = new Scope(ignoreOuterScope ? null : curScope);
+			curScope = blockScope;
+
+			for (var i : it.initDef) {
+				curScope.addVar(i.id, Type.transNode(i.type), i.pos);
+			}
+		}
 		if (it.cond != null) {
 			it.cond.accept(this);
 			if (!checkCondition(it.cond)) {
@@ -261,6 +271,10 @@ public class SemanticChecker implements ASTVisitor {
 		it.body.accept(this);
 
 		inLoop = pastInLoop;
+
+		if (it.initDef != null) {
+			curScope = pastScope;
+		}
 	}
 
 	@Override
