@@ -251,9 +251,7 @@ public class SemanticChecker implements ASTVisitor {
 			var blockScope = new Scope(ignoreOuterScope ? null : curScope);
 			curScope = blockScope;
 
-			for (var i : it.initDef) {
-				curScope.addVar(i.id, Type.transNode(i.type), i.pos);
-			}
+			it.initDef.forEach(x -> x.accept(this));
 		}
 		if (it.cond != null) {
 			it.cond.accept(this);
