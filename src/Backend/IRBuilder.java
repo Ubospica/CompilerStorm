@@ -416,13 +416,7 @@ public class IRBuilder implements ASTVisitor {
 			it.init.accept(this);
 		}
 		if (it.initDef != null) {
-			it.initDef.forEach(x -> {
-				x.type.accept(this);
-				var variable = new Variable(x.type.irType, x.id);
-				var allocaInst = addInst(new AllocaInst(x.type.irType), x.id + ".ptr");
-				addInst(new StoreInst(variable, allocaInst));
-				currentScope.addEntity(x.id, allocaInst);
-			});
+			it.initDef.forEach(x -> x.accept(this));
 		}
 		addInst(new BrLabelInst(forCond));
 

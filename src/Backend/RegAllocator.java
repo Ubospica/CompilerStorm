@@ -32,14 +32,11 @@ public class RegAllocator {
 	public void work() {
 		Reg.regList.forEach(x -> x.color = x);
 		K = Reg.colorReg.size();
-		for (var x : root.funcs) {
-//		root.funcs.forEach(x -> {
+		root.funcs.forEach(x -> {
 			currentFunc = x;
 			stackDelta = 0;
 			startAlloc();
-			System.out.println(x.id + " finished");
-//		});
-		}
+		});
 	}
 
 	int K = 0;
