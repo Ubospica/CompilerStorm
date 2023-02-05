@@ -50,8 +50,10 @@ public class Mem2Reg implements Pass {
                     renameStack.push(v.useList.get(0).user.getUse(0));
                 }
                 renameVar(v, func.blocks.get(0));
+                // System.out.println("--------------------: " + v.id);
+                // new IRPrinter(System.out).visit(it);
             });
-            // simplifyPhi(func);
+            simplifyPhi(func);
         });
     }
 
@@ -98,33 +100,36 @@ public class Mem2Reg implements Pass {
         var iter = b.insts.listIterator();
         while (iter.hasNext()) {
             var inst = iter.next();
-            if (inst instanceof LoadInst && inst.getUse(0) == var) {
-                iter.remove();
+            if (inst instanceof LoadInst loadInst&& inst.getUse(0) == var) {
+                var newInst = new AssignInst(renameStack.peek());
+                iter.set(newInst);
+                for (var use : inst.useList) {
+                    for (var use1 : use.user.operandList) {
+                        if (use1.val == inst) {
+                            use1.val = newInst;
+                            newInst.useList.add(use1);
+                        }
+                    }
+                }
             } else if (inst instanceof StoreInst && inst.getUse(1) == var) {
                 renameStack.push(inst.getUse(0));
                 iter.remove();
-            } else if (inst instanceof PhiInst phiInst && phiInst.isDomPhi) {
-                if (phiInst.target == var) {
-                    renameStack.push(inst);
-                }
+            } else if (inst instanceof PhiInst phiInst && phiInst.isDomPhi && phiInst.target == var) {
+                renameStack.push(inst);
             } else {
-                for (var i : inst.operandList) {
-                    if (i.val instanceof LoadInst loadInst && loadInst.getUse(0) == var) {
-                        i.val = renameStack.peek();
-                        renameStack.peek().useList.add(i);
-                    }
-                }
+                // do nothing
             }
         }
 
         b.nxt.forEach(nxt -> nxt.insts.forEach(i -> {
-            if (i instanceof PhiInst phiInst&& phiInst.target == var) {
-                // if (renameStack.size() > 1)
-                phiInst.add(renameStack.peek(), b);
-                if (phiInst.type == Type.VOID) {
-                    phiInst.type = renameStack.peek().type;
+            if (i instanceof PhiInst phiInst && phiInst.target == var) {
+                if (renameStack.size() > 1) {
+                    phiInst.add(renameStack.peek(), b);
+                    if (phiInst.type == Type.VOID) {
+                        phiInst.type = renameStack.peek().type;
+                    }
                 }
-                // else phiInst.add(b, x.type.getInit());
+                else phiInst.add(new ZeroInitConstant(Type.VOID), b);
             }
         }));
         domTree.domSon.get(b).forEach(s -> renameVar(var, s));
@@ -137,14 +142,18 @@ public class Mem2Reg implements Pass {
         func.blocks.forEach(t -> {
             for (int i = 0; i < t.insts.size(); i++) {
                 Inst x = t.insts.get(i);
-                if (x instanceof PhiInst phiInst && phiInst.args.size() == 1) {
-                    var value = phiInst.args.get(0).a;
+                if (x instanceof PhiInst phiInst && phiInst.useSize() == 2) {
+                    var value = phiInst.getUse(0);
                     phiInst.useList.forEach(u -> u.user.operandList.forEach(u1 -> {
-                        if (u1.val == x) u1.val = value;
+                        if (u1.val == x) {
+                            u1.val = value;
+                            value.useList.add(u1);
+                        }
                     }));
                 }
             }
         });
+
         // unused phi
         AtomicBoolean cond = new AtomicBoolean(true);
         while (cond.get()) {
@@ -153,17 +162,12 @@ public class Mem2Reg implements Pass {
                 var iter = b.insts.listIterator();
                 while (iter.hasNext()) {
                     var inst = iter.next();
-                    if (inst.useList.isEmpty()) {
+                    if (inst instanceof PhiInst && inst.useList.isEmpty()) {
                         iter.remove();
                         inst.operandList.forEach(u -> {
-                            var iter1 = u.val.useList.listIterator();
-                            while (iter1.hasNext()) {
-                                var u1 = iter1.next();
-                                if (u1.user == inst) {
-                                    iter1.remove();
-                                }
-                            }
+                            u.val.useList.remove(u);
                         });
+                        cond.set(true);
                     }
                 }
             });

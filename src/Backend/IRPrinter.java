@@ -160,6 +160,8 @@ public class IRPrinter implements Pass {
 		}
 		if (it instanceof AllocaInst newIt) {
 			out.printf("alloca %s", ((PointerType)newIt.type).getDereference().toString());
+		} else if (it instanceof AssignInst newIt) {
+			out.printf("%s", getTypeValStr(newIt.getUse(0)));
 		} else if (it instanceof BinaryInst newIt) {
 			out.printf("%s %s, %s", getOpStr(newIt.opType), getTypeValStr(newIt.getUse(0)),
 					getValStr(newIt.getUse(1)));

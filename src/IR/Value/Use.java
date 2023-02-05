@@ -10,10 +10,20 @@ public class Use {
 		this.val = val;
 	}
 
+	public boolean equals(Use another) {
+		return user == another.user && val == another.val;
+	}
+
 	public static Use getUseLink(User user, Value val) {
 		Use ret = new Use(user, val);
 		user.operandList.add(ret);
 		val.useList.add(ret);
 		return ret;
+	}
+
+	public static void removeUse(User user, Value val) {
+		var use = new Use(user, val);
+		user.operandList.remove(use);
+		val.useList.remove(use);
 	}
 }

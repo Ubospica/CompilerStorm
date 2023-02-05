@@ -15,6 +15,7 @@ import IR.Type.Type;
 import IR.Value.Constant.IntConstant;
 import IR.Value.Constant.NullConstant;
 import IR.Value.Constant.StrConstant;
+import IR.Value.Constant.ZeroInitConstant;
 import IR.Value.Global.BasicBlock;
 import IR.Value.Global.Function;
 import IR.Value.Global.Module;
@@ -180,18 +181,23 @@ public class ASMBuilder implements Pass {
 				var rd = getValueReg(newIt);
 				// suppose: blocks in phi inst are visited
 				// and jump inst is at the end of the block
-				for (var x : newIt.args) {
-					var block = blockMapping.get(x.b);
-					var iter = block.insts.listIterator(block.insts.size());
-					while(iter.hasPrevious()) {
-						var pr = iter.previous();
+				var iter = newIt.operandList.listIterator();
+				while (iter.hasNext()) {
+					var a = iter.next().val;
+					var b = iter.next().val;
+					if (a instanceof ZeroInitConstant)
+						continue;
+					var block = blockMapping.get(b);
+					var iter1 = block.insts.listIterator(block.insts.size());
+					while(iter1.hasPrevious()) {
+						var pr = iter1.previous();
 						if (!(pr instanceof J || pr instanceof Beqz)) {
-							iter.next();
+							iter1.next();
 							break;
 						}
 					}
-					ASMBlock.insertInstIterator = iter;
-					currentBlock.addInst(new Mv(rd, getValueReg(x.a)));
+					ASMBlock.insertInstIterator = iter1;
+					currentBlock.addInst(new Mv(rd, getValueReg(a)));
 					ASMBlock.insertInstIterator = null;
 				}
 			}
@@ -202,6 +208,10 @@ public class ASMBuilder implements Pass {
 		if (it instanceof AllocaInst newIt) {
 			var reg = new VirtualReg();
 			valueMapping.put(it, reg);
+		} else if (it instanceof AssignInst newIt) {
+			var rs = getValueReg(newIt.getUse(0));
+			var rd = getValueReg(newIt);
+			currentBlock.addInst(new Mv(rd, rs));
 		} else if (it instanceof BinaryInst newIt) {
 			// can optimize: add imm
 			var rs1 = getValueReg(newIt.getUse(0));
