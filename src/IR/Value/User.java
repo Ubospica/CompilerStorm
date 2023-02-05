@@ -19,6 +19,18 @@ abstract public class User extends Value {
 		return operandList.get(idx).val;
 	}
 
+	public int useSize() {
+		return operandList.size();
+	}
+
+	public void replaceUse(Value oldVal, Value newVal) {
+		for (var i : operandList) {
+			if (i.val == oldVal) {
+				i.val = newVal;
+			}
+		}
+	}
+
 	public int getOperandCnt() {
 		return operandList.size();
 	}

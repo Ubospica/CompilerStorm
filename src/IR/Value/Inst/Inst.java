@@ -3,6 +3,7 @@ package IR.Value.Inst;
 import IR.Pass;
 import IR.Type.Type;
 import IR.Value.User;
+import IR.Value.Global.BasicBlock;
 
 /**
  * Instruction Hierarchy:
@@ -16,6 +17,7 @@ import IR.Value.User;
  *	CallInst, GEPInst, BitcastInst
  */
 abstract public class Inst extends User {
+	public BasicBlock inBlock;
 
 	public Inst(Type type) {
 		super(type);

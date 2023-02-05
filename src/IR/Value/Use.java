@@ -5,7 +5,7 @@ public class Use {
 	public User user;
 	public Value val;
 
-	private Use(User user, Value val) {
+	public Use(User user, Value val) {
 		this.user = user;
 		this.val = val;
 	}

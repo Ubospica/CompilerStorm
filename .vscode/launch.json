@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch tmp",
+            "request": "launch",
+            "mainClass": "tmp",
+            "projectName": "CompilerStorm_bec7ecd7"
+        },
+        {
+            "type": "java",
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}"
@@ -16,8 +23,7 @@
             "request": "launch",
             "mainClass": "Compiler",
             "projectName": "CompilerStorm_bec7ecd7",
-            "args": "-debug",
-            // "vmArgs": "-agentpath:/home/ubospica/dev/java/honest-profiler/liblagent.so=interval=7,logPath=/tmp/tmp/log.hpl"
+            "args": "-debug"
         }
     ]
 }

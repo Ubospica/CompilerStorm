@@ -167,7 +167,6 @@ public class IRBuilder implements ASTVisitor {
 
 	@Override
 	public void visit(FuncDefNode it) {
-
 		var funcName = currentStruct == null ? it.id : currentStruct.id + "." + it.id;
 		var func = topModule.gFunc.get(funcName);
 		var ty = (FuncType)func.type;
@@ -185,7 +184,7 @@ public class IRBuilder implements ASTVisitor {
 			var ptrTy = ty.argType.get(0);
 			var variable = new Variable(ptrTy, "this");
 			func.arg.add(variable);
-			var allocaInst = addInst(new AllocaInst(ptrTy), "this.ptr");
+			var allocaInst = addInst(new AllocaInst(ptrTy, true), "this.ptr");
 			addInst(new StoreInst(variable, allocaInst));
 			currentScope.addEntity("this", allocaInst);
 		}
@@ -193,7 +192,7 @@ public class IRBuilder implements ASTVisitor {
 		it.paramList.forEach(x -> {
 			var variable = new Variable(x.type.irType, x.id);
 			func.arg.add(variable);
-			var allocaInst = addInst(new AllocaInst(x.type.irType), x.id + ".ptr");
+			var allocaInst = addInst(new AllocaInst(x.type.irType, true), x.id + ".ptr");
 			addInst(new StoreInst(variable, allocaInst));
 			currentScope.addEntity(x.id, allocaInst);
 		});
@@ -241,7 +240,7 @@ public class IRBuilder implements ASTVisitor {
 			var ptrTy = ty.argType.get(0);
 			var variable = new Variable(ptrTy, "this");
 			func.arg.add(variable);
-			var allocaInst = addInst(new AllocaInst(ptrTy), "this.ptr");
+			var allocaInst = addInst(new AllocaInst(ptrTy, true), "this.ptr");
 			addInst(new StoreInst(variable, allocaInst));
 			currentScope.addEntity("this", allocaInst);
 		}
@@ -960,16 +959,17 @@ public class IRBuilder implements ASTVisitor {
 	// tool functions
 
 	private Inst addInst(Inst inst, String id) {
-		currentBlock.addInst(inst);
 		inst.id = id;
+		inst.inBlock = currentBlock;
+		currentBlock.addInst(inst);
 
 		// maintain blocks
-//		if (inst instanceof BrLabelInst newInst) {
-//			BasicBlock.addLink(currentBlock, (BasicBlock) newInst.getUse(0));
-//		} else if (inst instanceof BrInst newInst) {
-//			BasicBlock.addLink(currentBlock, (BasicBlock) newInst.getUse(0));
-//			BasicBlock.addLink(currentBlock, (BasicBlock) newInst.getUse(1));
-//		}
+		if (inst instanceof BrLabelInst newInst) {
+			BasicBlock.addLink(currentBlock, (BasicBlock) newInst.getUse(0));
+		} else if (inst instanceof BrInst newInst) {
+			BasicBlock.addLink(currentBlock, (BasicBlock) newInst.getUse(1));
+			BasicBlock.addLink(currentBlock, (BasicBlock) newInst.getUse(2));
+		}
 		return inst;
 	}
 

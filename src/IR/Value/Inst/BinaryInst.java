@@ -1,8 +1,5 @@
 package IR.Value.Inst;
 
-import IR.Type.Type;
-import IR.Value.Use;
-import IR.Value.User;
 import IR.Value.Value;
 
 /**
