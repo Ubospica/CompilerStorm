@@ -124,6 +124,7 @@ public class ASMBuilder implements Pass {
 		funcEndBlock = new ASMBlock(it.id, "end");
 
 		it.blocks.forEach(x -> x.accept(this));
+		it.blocks.forEach(x -> handlePhi(x));
 
 		asmFunc.blocks.add(funcEndBlock);
 		currentBlock = funcEndBlock;
@@ -169,6 +170,32 @@ public class ASMBuilder implements Pass {
 		var asmBlock = blockMapping.get(it);
 		currentBlock = asmBlock;
 		it.insts.forEach(x -> x.accept(this));
+	}
+
+	public void handlePhi(BasicBlock it) {
+		var asmBlock = blockMapping.get(it);
+		currentBlock = asmBlock;
+		it.insts.forEach(inst -> {
+			if (inst instanceof PhiInst newIt) {
+				var rd = getValueReg(newIt);
+				// suppose: blocks in phi inst are visited
+				// and jump inst is at the end of the block
+				for (var x : newIt.args) {
+					var block = blockMapping.get(x.b);
+					var iter = block.insts.listIterator(block.insts.size());
+					while(iter.hasPrevious()) {
+						var pr = iter.previous();
+						if (!(pr instanceof J || pr instanceof Beqz)) {
+							iter.next();
+							break;
+						}
+					}
+					ASMBlock.insertInstIterator = iter;
+					currentBlock.addInst(new Mv(rd, getValueReg(x.a)));
+					ASMBlock.insertInstIterator = null;
+				}
+			}
+		});
 	}
 
 	public void visit(Inst it) {
@@ -312,23 +339,7 @@ public class ASMBuilder implements Pass {
 				currentBlock.addInst(new Sw(rs2, rs1, new Imm(0)));
 			}
 		} else if (it instanceof PhiInst newIt) {
-			var rd = getValueReg(newIt);
-			// suppose: blocks in phi inst are visited
-			// and jump inst is at the end of the block
-			for (var x : newIt.args) {
-				var block = blockMapping.get(x.b);
-				var iter = block.insts.listIterator(block.insts.size());
-				while(iter.hasPrevious()) {
-					var pr = iter.previous();
-					if (!(pr instanceof J || pr instanceof Beqz)) {
-						iter.next();
-						break;
-					}
-				}
-				ASMBlock.insertInstIterator = iter;
-				currentBlock.addInst(new Mv(rd, getValueReg(x.a)));
-				ASMBlock.insertInstIterator = null;
-			}
+			// do nothing
 		} else if (it instanceof RetInst newIt) {
 			if (!newIt.operandList.isEmpty()) {
 				currentBlock.addInst(new Mv(Reg.a0, getValueReg(newIt.getUse(0))));

@@ -62,5 +62,8 @@
         "streambuf": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp"
-    }
+    },
+    "java.project.sourcePaths": [
+        "src"
+    ]
 }

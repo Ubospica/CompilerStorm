@@ -83,13 +83,13 @@ public class Compiler {
 			var irBuilder = new IRBuilder("a.mx", astRoot);
 			var topModule = irBuilder.work();
 			new Mem2Reg().visit(topModule);
-			// new IRPrinter(outputIR).visit(topModule);
+			new IRPrinter(outputIR).visit(topModule);
 
 			// Inst selection
 			var builder = new ASMBuilder(topModule);
 			var asmRoot = builder.work();
 			// printing unallocated ASM
-			// new ASMPrinter(outputAsm).visit(asmRoot);
+			new ASMPrinter(outputAsm).visit(asmRoot);
 			// reg alloc
 			new RegAllocator(asmRoot).work();
 			// printing ASM

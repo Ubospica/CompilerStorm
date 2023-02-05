@@ -51,7 +51,7 @@ public class Mem2Reg implements Pass {
                 }
                 renameVar(v, func.blocks.get(0));
             });
-            simplifyPhi(func);
+            // simplifyPhi(func);
         });
     }
 
@@ -98,13 +98,15 @@ public class Mem2Reg implements Pass {
         var iter = b.insts.listIterator();
         while (iter.hasNext()) {
             var inst = iter.next();
-            if (inst instanceof LoadInst) {
+            if (inst instanceof LoadInst && inst.getUse(0) == var) {
                 iter.remove();
-            } else if (inst instanceof StoreInst) {
+            } else if (inst instanceof StoreInst && inst.getUse(1) == var) {
                 renameStack.push(inst.getUse(0));
                 iter.remove();
-            } else if (inst instanceof PhiInst && ((PhiInst) inst).isDomPhi) {
-                renameStack.push(inst);
+            } else if (inst instanceof PhiInst phiInst && phiInst.isDomPhi) {
+                if (phiInst.target == var) {
+                    renameStack.push(inst);
+                }
             } else {
                 for (var i : inst.operandList) {
                     if (i.val instanceof LoadInst loadInst && loadInst.getUse(0) == var) {
