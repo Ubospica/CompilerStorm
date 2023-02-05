@@ -82,6 +82,7 @@ public class Compiler {
 			// IR Building and Printing
 			var irBuilder = new IRBuilder("a.mx", astRoot);
 			var topModule = irBuilder.work();
+			new Mem2Reg().visit(topModule);
 			// new IRPrinter(outputIR).visit(topModule);
 
 			// Inst selection
