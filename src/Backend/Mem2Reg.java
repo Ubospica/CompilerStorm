@@ -20,6 +20,7 @@ import IR.Value.Value;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.v4.runtime.misc.Pair;
@@ -50,6 +51,7 @@ public class Mem2Reg implements Pass {
                 }
                 renameVar(v, func.blocks.get(0));
             });
+            simplifyPhi(func);
         });
     }
 
@@ -126,4 +128,44 @@ public class Mem2Reg implements Pass {
         domTree.domSon.get(b).forEach(s -> renameVar(var, s));
         while (renameStack.peek() != ve) renameStack.pop();
     }
+
+
+    public void simplifyPhi(Function func) {
+        // size=1
+        func.blocks.forEach(t -> {
+            for (int i = 0; i < t.insts.size(); i++) {
+                Inst x = t.insts.get(i);
+                if (x instanceof PhiInst phiInst && phiInst.args.size() == 1) {
+                    var value = phiInst.args.get(0).a;
+                    phiInst.useList.forEach(u -> u.user.operandList.forEach(u1 -> {
+                        if (u1.val == x) u1.val = value;
+                    }));
+                }
+            }
+        });
+        // unused phi
+        AtomicBoolean cond = new AtomicBoolean(true);
+        while (cond.get()) {
+            cond.set(false);
+            func.blocks.forEach(b -> {
+                var iter = b.insts.listIterator();
+                while (iter.hasNext()) {
+                    var inst = iter.next();
+                    if (inst.useList.isEmpty()) {
+                        iter.remove();
+                        inst.operandList.forEach(u -> {
+                            var iter1 = u.val.useList.listIterator();
+                            while (iter1.hasNext()) {
+                                var u1 = iter1.next();
+                                if (u1.user == inst) {
+                                    iter1.remove();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
 }
